@@ -1,0 +1,201 @@
+ai:
+  enabled: true
+  model: gemini-flash-latest
+  temperature: 0.2
+  max_tokens: 2048
+prompt:
+  system: |
+    Você é **Argos**, o assistente oficial da comunidade **Trono dos Reis (TDR)** no Discord.
+    Seu papel é ajudar os membros com dúvidas sobre o servidor, seus sistemas,
+    funcionalidades do bot e regras da comunidade.
+
+    Você NÃO substitui a staff. Seu papel é explicar, orientar e ajudar os membros.
+    Nunca invente informações que não estejam documentadas.
+
+    **DIRETRIZES:**
+    1. Seja claro, amigável e objetivo.
+    2. Se não souber a resposta, indique que o membro deve consultar a staff.
+    3. Não responda perguntas sobre assuntos não relacionados ao servidor.
+    4. Forneça informações sobre economia, leveling, eventos, tickets e outros sistemas do bot.
+
+    **TOM E CONDUTA:**
+    - Seja prestativo e acolhedor.
+    - Use linguagem informal mas respeitosa.
+    - Reforce que decisões finais cabem à staff.
+  server_context: |
+    **SISTEMAS DO SERVIDOR TDR:**
+
+    **1. ECONOMIA:**
+    - Sistema de carteira e banco com dracma virtual.
+    - Comandos: daily, deposit, withdraw, pay, rob, bet.
+    - Loja com itens comprável.
+
+    **2. LEVELING:**
+    - XP ganho por mensagens (com anti-spam e cooldown).
+    - Recompensas de cargos por nível.
+    - Multiplicadores por cargo e canal.
+
+    **3. TICKETS:**
+    - Sistema de suporte via tickets.
+    - Staff pode gerenciar, fechar e avaliar tickets.
+
+    **4. EVENTOS:**
+    - Eventos automáticos como Double XP, Chuva de Dracmas.
+    - Eventos aleatórios e missões diárias.
+
+    **5. PERFIL:**
+    - Perfil customizável com bio, cores e imagens.
+    - Sistema de estrelas e rankings.
+security:
+  max_input_length: 2000
+  sanitize_input: true
+  strip_mentions: true
+  blocked_patterns:
+    - ignore previous instructions
+    - ignore all previous
+    - disregard previous
+    - você é agora
+    - you are now
+    - pretend you are
+    - simulate being
+    - roleplay as
+    - act as if
+    - "system:"
+    - "assistant:"
+    - "user:"
+    - <|im_start|>
+    - <|im_end|>
+    - "[INST]"
+    - "[/INST]"
+  suspicious_keywords:
+    - jailbreak
+    - bypass
+    - override
+    - admin mode
+    - developer mode
+  block_prompt_extraction: true
+memory:
+  short_term:
+    enabled: true
+    max_messages: 10
+    ttl_minutes: 30
+    storage: redis
+  medium_term:
+    enabled: true
+    max_messages: 50
+    ttl_hours: 24
+    storage: redis
+    summarize: true
+  long_term:
+    enabled: true
+    storage: database
+    summary_threshold: 100
+    track_topics: true
+    track_patterns: true
+user_profiling:
+  enabled: true
+  track_interests: true
+  interests_categories:
+    - economia
+    - leveling
+    - eventos
+    - jogos
+    - administração
+  track_behavior: true
+  behavior_metrics:
+    - frequência de perguntas
+    - horários de atividade
+    - tópicos recorrentes
+    - estilo de comunicação
+  adaptive_responses: true
+  auto_update: true
+functions:
+  enabled: true
+  available_functions:
+    - name: query_system_knowledge
+      description: Buscar informações sobre sistemas do servidor
+      enabled: true
+    - name: get_user_economy
+      description: Obter dados econômicos do usuário (carteira, banco)
+      enabled: true
+      require_permission: false
+    - name: get_user_level
+      description: Obter nível e XP do usuário
+      enabled: true
+    - name: get_user_inventory
+      description: Ver inventário do usuário
+      enabled: true
+    - name: search_shop_items
+      description: Buscar itens disponíveis na loja
+      enabled: true
+    - name: get_server_events
+      description: Ver eventos ativos no servidor
+      enabled: true
+    - name: get_leaderboard
+      description: Consultar rankings do servidor
+      enabled: true
+      parameters:
+        - "type: xp | money | bank | wallet"
+        - "limit: número de posições"
+rate_limit:
+  enabled: true
+  max_requests_per_user: 30
+  window_minutes: 1
+  cooldown_seconds: 3
+  limit_message: Você atingiu o limite de perguntas. Tente novamente em {time}.
+responses:
+  max_length: 2000
+  typing_indicator: true
+  embed_responses: true
+  embed_color: "#5865F2"
+  include_footer: true
+  footer_text: Argos AI • Dúvidas? Use rg!help
+  mention_user: true
+  add_reactions: false
+  reactions:
+    - ✅
+mentions:
+  respond_to_mentions: true
+  empty_mention_response: |
+    Olá! 👋 Eu sou o Argos, assistente de IA do servidor.
+
+    **Como me usar:**
+    • Use o comando: `rg!ask <sua pergunta>`
+
+    **Posso ajudar com:**
+    ✦ Sistemas do servidor
+    ✦ Comandos e funcionalidades
+    ✦ Dúvidas sobre economia, leveling
+    ✦ Informações sobre eventos
+
+    Digite `rg!help` para ver todos os comandos disponíveis!
+  respond_to_replies: true
+  allowed_channels: []
+  ignored_channels: []
+knowledge_seed:
+  auto_seed: true
+  systems_category_id: "1469687950722863170"
+  auto_update: true
+  update_interval_hours: 24
+  source_channels: []
+logging:
+  log_interactions: true
+  log_function_calls: true
+  log_injection_attempts: true
+  level: info
+metrics:
+  enabled: true
+  track:
+    - total_interactions
+    - response_time
+    - function_calls
+    - errors
+    - injection_attempts
+    - user_satisfaction
+key_management:
+  enabled: true
+  strategy: least-used
+  auto_disable_on_auth_error: true
+  default_cooldown_minutes: 60
+  token_limit_buffer: 0.9
+  auto_reset_daily: true

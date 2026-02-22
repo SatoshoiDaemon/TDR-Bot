@@ -1,0 +1,54 @@
+enabled: true
+check_interval_minutes: 10
+whitelist_channels:
+  - "1469688067106541695"
+blacklist_channels:
+  - "1469688074224144395"
+  - "1469688073024573684"
+  - "1469688068788195489"
+  - "1469688070210191523"
+whitelist_categories: []
+blacklist_categories:
+  - "1469687949213040837"
+  - "1469687950722863170"
+  - "1469687953671458836"
+  - "1469687956922171498"
+  - "1469687959098753260"
+  - "1469687949213040837"
+fixed_events:
+  double_xp_weekend:
+    enabled: true
+    multiplier: 2
+  daily_shop_deals:
+    enabled: false
+    max_items: 5
+    discount_percentage: 0.3
+    notification_channel_id: ""
+random_events:
+  money_rain:
+    enabled: true
+    chance: 0.1
+    duration_minutes: 15
+    min_amount: 10
+    max_amount: 50
+    message: 💸 **CHUVA DE DRACMAS!** Pelos próximos {duration} minutos, cada mensagem enviada pode te dar dracmas!
+  hot_zone:
+    enabled: true
+    chance: 0.15
+    duration_minutes: 30
+    xp_multiplier: 1.5
+    message: 🔥 **ZONA QUENTE!** O canal {channel} está com bônus de XP de {multiplier}x pelos próximos {duration} minutos!
+  enigma_challenge:
+    enabled: true
+    chance: 0.4
+    reward_min: 500
+    reward_max: 2000
+    types:
+      - anagram
+      - math
+      - trivia
+  diamond_reaction:
+    enabled: true
+    chance: 0.05
+    reward: 5000
+    message: 💎 Um diamante apareceu! Seja o primeiro a reagir para coletar!

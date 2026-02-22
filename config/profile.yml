@@ -1,0 +1,24 @@
+# Configuração de Perfil do ArgosBot
+# Gerenciado por Axiom.ts
+
+# Cargos que devem ser ignorados ao exibir o "Maior Cargo" no perfil
+# Útil para cargos de cores, separadores ou cargos automáticos sem prestígio
+ignored_roles:
+  - "1459951122528731238"
+  - "1459954600286355497"
+  - "1463255039664586782"
+
+# Configurações padrão para novos perfis
+defaults:
+  about_me: "Um membro do Trono dos Reis."
+  color: "#5865F2"
+  thumbnail: "{user.avatar}"
+  image: ""
+
+# Placeholders suportados:
+# {user.avatar} - Avatar do usuário
+# {server.avatar} - Ícone do servidor
+# {user.tag} - Nome#0000 do usuário
+
+starboard:
+  channel_id: ""

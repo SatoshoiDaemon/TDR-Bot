@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@commands/*": ["src/commands/*"],
+      "@services/*": ["src/services/*"],
+      "@database/*": ["src/database/*"],
+      "@shared/*": ["src/shared/*"],
+      "@utils/*": ["src/shared/*"],
+      "@core/*": ["src/core/*"],
+      "@scheduler/*": ["src/scheduler/*"],
+      "@types/*": ["src/types/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "database"]
+}

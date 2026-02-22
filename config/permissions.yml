@@ -1,0 +1,23 @@
+# Configuração de Permissões do ArgosBot
+# Gerenciado por Axiom.ts
+
+# Permissão padrão do Discord para comandos de moderação (XP, Dracmas, etc)
+staff_level_permission: ManageRoles
+
+# IDs de membros que possuem acesso total aos comandos de moderação independente de cargo
+staff_members:
+  - " " # Substitua pelo seu ID
+  - " "
+  - " "
+  - " "
+  - " "
+
+# IDs de cargos que possuem acesso total aos comandos de moderação
+staff_level_roles:
+  - "1469687657117257897"
+  - "1469687659898077380"
+  - "1469687661349437583"
+  - "1469687661349437583"
+  - "1469687664495296777"
+  - "1469687665204138087"
+  - "1469687667494092811"

@@ -1,0 +1,27 @@
+# Configuração do Sistema de Membros Inativos
+# Gerenciado por Axiom.ts
+
+# Configurações Gerais
+enabled: true
+
+# Dias de inatividade para considerar o membro inativo
+# (Sem enviar mensagens)
+inactive_days: 14
+
+# Canal onde o bot enviará a notificação de inatividade
+# Deixe vazio para desativar o envio automático
+notification_channel_id: "1467604625627807989"
+
+# Mensagem enviada para o membro inativo
+message:
+  content: "Olá {user}, notamos que você está um pouco sumido do **{server}**!"
+  embed:
+    title: "Sentimos sua falta!"
+    description: "Você não envia mensagens há mais de {days} dias. Gostaríamos de saber se está tudo bem ou se tem algum feedback para nos dar."
+    color: "#FF008D" # Magenta Neon
+    footer: "Axiom.ts · TDR"
+
+# Configuração do Botão de Feedback
+feedback_button:
+  label: "Dar Feedback"
+  style: "Primary" # Primary, Secondary, Success, Danger

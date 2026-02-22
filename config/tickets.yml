@@ -1,0 +1,20 @@
+# Configurações do Sistema de Tickets
+enabled: true
+
+# IDs dos cargos que podem gerenciar tickets
+staff_role_ids:
+  - "1469687665204138087"
+  - "1469687664495296777"
+  - "1469687663434137793"
+  - "1469687661349437583"
+  - "1469687659898077380"
+  - "1469687657117257897"
+
+# ID do canal onde os transcripts serão salvos
+transcript_channel_id: "1471570813256859760"
+
+# ID da categoria onde os tickets abertos serão criados
+category_id: "1469687959098753260"
+
+# ID do canal onde o painel de tickets foi enviado (informativo)
+panel_channel_id: "1469688112660742328"

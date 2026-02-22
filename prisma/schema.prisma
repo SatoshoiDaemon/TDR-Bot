@@ -1,0 +1,500 @@
+// Prisma Schema para ArgosBot
+// Gerenciado por Axiom.ts
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Módulo de Usuário e Servidor ---
+
+model User {
+  id            String   @id // Discord User ID
+  username      String
+  discriminator String?
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Personalização de Perfil
+  aboutMe       String?  @default("Um cidadão de TDR.")
+  profileColor  String?  @default("#5865F2")
+  profileImage  String?
+  thumbnailImage String?
+  afkReason      String?
+  afkSince       DateTime?
+
+  // Relações
+  economy       Economy?
+  level         Level?
+  transactions  Transaction[]
+  inventory     Inventory[]
+  badges        UserBadge[]
+}
+
+model Guild {
+  id          String   @id // Discord Guild ID
+  name        String
+  icon        String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  
+  // Snapshots
+  snapshots   Snapshot[]
+  categorySnapshots CategorySnapshot[]
+}
+
+// --- Módulo de Snapshots e Mirroring ---
+
+model Snapshot {
+  id          Int      @id @default(autoincrement())
+  timestamp   DateTime @default(now())
+  guildId     String
+  guildName   String
+  data        Json     // Estrutura completa em JSON
+  type        String   @default("full") // full, partial
+  
+  guild       Guild    @relation(fields: [guildId], references: [id])
+}
+
+model CategorySnapshot {
+  id            Int      @id @default(autoincrement())
+  timestamp     DateTime @default(now())
+  guildId       String
+  categoryId    String
+  categoryName  String
+  data          Json
+  
+  guild         Guild    @relation(fields: [guildId], references: [id])
+}
+
+model MirroredMessage {
+  id                Int      @id @default(autoincrement())
+  messageId         String   @unique // ID original do Discord
+  channelId         String
+  originalChannelId String
+  authorId          String
+  authorTag         String
+  content           String?  @db.Text
+  timestamp         DateTime
+  embeds            Json?
+  attachments       Json?
+  reactions         Json?
+  mirroredMessageId String?  // ID da mensagem no servidor de backup
+  createdAt         DateTime @default(now())
+}
+
+// --- Módulo de Economia ---
+
+model Economy {
+  userId    String @id
+  wallet    BigInt @default(0)
+  bank      BigInt @default(0)
+  lastDaily DateTime?
+  
+  user      User   @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  amount    BigInt
+  type      String   // deposit, withdraw, bet, transfer, buy
+  status      String   // success, failed
+  description String?
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ShopItem {
+  id            String    @id @default(uuid())
+  name          String
+  price         Int
+  description   String
+  icon          String?
+  stock         Int?      // null = ilimitado
+  isUsable      Boolean   @default(true)
+  isCollectible Boolean   @default(false) // Se true, aparece em uma seção especial do perfil
+  requirements  Json?     // { roles: [], minLevel: 0, minServerTime: 0 }
+  
+  // Ações ao comprar ou usar
+  // Estrutura: { 
+  //   message: string, 
+  //   addRoles: string[], 
+  //   removeRoles: string[], 
+  //   tempRoles: { roleId: string, duration: number }[], 
+  //   addMoney: number, 
+  //   addXp: number,
+  //   badge: { name: string, icon: string }
+  // }
+  actions       Json?     
+  
+  createdAt     DateTime  @default(now())
+  inventory     Inventory[]
+}
+
+model Inventory {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  itemId    String
+  item      ShopItem @relation(fields: [itemId], references: [id])
+  quantity  Int      @default(1)
+  
+  // Para itens temporários
+  expiresAt DateTime? 
+  
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemId])
+}
+
+model UserBadge {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  icon      String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, name])
+}
+
+// --- Módulo de Leveling ---
+
+model Level {
+  userId    String @id
+  xp        Int    @default(0)
+  level     Int    @default(0)
+  
+  // Engajamento
+  weeklyXp      Int      @default(0)
+  weeklyMessages Int     @default(0)
+  eventPoints   Int      @default(0)
+  
+  lastMessage DateTime @default(now())
+  
+  user      User   @relation(fields: [userId], references: [id])
+}
+
+// --- Configurações e Logs ---
+
+model SystemConfig {
+  key   String @id
+  value String
+}
+
+model Reminder {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  content   String
+  time      DateTime
+  dm        Boolean  @default(false)
+  channelId String
+  createdAt DateTime @default(now())
+}
+
+model Roll {
+  id          String       @id @default(uuid())
+  trigger     String       @unique // A mensagem que ativa o roll
+  title       String
+  description String?      @db.Text
+  image       String?
+  thumbnail   String?
+  options     RollOption[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model RollOption {
+  id          String   @id @default(uuid())
+  rollId      String
+  roll        Roll     @relation(fields: [rollId], references: [id], onDelete: Cascade)
+  text        String   @db.Text
+  weight      Int      @default(1) // Para cálculo de porcentagem
+  createdAt   DateTime @default(now())
+}
+
+// --- Módulo de IA (Sistema Gemini) ---
+
+model SystemKnowledge {
+  id          String   @id @default(uuid())
+  category    String   // "economia", "leveling", "roleplay", "eventos", etc
+  title       String
+  content     String   @db.Text
+  keywords    String[] // Para busca eficiente
+  channelId   String?  // Canal de origem (se aplicável)
+  priority    Int      @default(0) // Prioridade na busca
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([category])
+  @@index([keywords])
+}
+
+model AIConversation {
+  id          String   @id @default(uuid())
+  userId      String
+  role        String   // "user" | "assistant" | "system"
+  content     String   @db.Text
+  tokens      Int?     // Tokens usados
+  functionCall Json?   // Registro de function calls
+  timestamp   DateTime @default(now())
+  sessionId   String   // Para agrupar conversas
+  
+  @@index([userId, sessionId])
+  @@index([timestamp])
+}
+
+model AIMemory {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  shortTerm   Json?    // Últimas interações (array de mensagens)
+  mediumTerm  Json?    // Resumo das últimas 24h
+  longTerm    Json?    // Resumo geral e padrões
+  lastUpdate  DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model UserProfile {
+  id                    String   @id // Discord User ID
+  interests             String[] // ["economia", "leveling", "roleplay"]
+  personality           String?  // "casual", "formal", "técnico"
+  commonQuestions       String[] // Perguntas frequentes do usuário
+  preferredStyle        String?  // Estilo de resposta preferido
+  totalInteractions     Int      @default(0)
+  lastInteraction       DateTime?
+  behaviorPatterns      Json?    // Padrões identificados
+  topicsOfInterest      Json?    // Tópicos com contadores
+  
+  // Star Board
+  stars                 Int      @default(0)
+  lastFeaturedAt        DateTime?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@index([lastInteraction])
+}
+
+model AIMetrics {
+  id                    Int      @id @default(autoincrement())
+  date                  DateTime @default(now())
+  totalInteractions     Int      @default(0)
+  avgResponseTime       Float?   // Em milissegundos
+  functionCallsCount    Int      @default(0)
+  errorsCount           Int      @default(0)
+  injectionAttempts     Int      @default(0)
+  uniqueUsers           Int      @default(0)
+  
+  @@index([date])
+}
+
+model AIRateLimit {
+  userId          String   @id
+  requestCount    Int      @default(0)
+  windowStart     DateTime @default(now())
+  lastRequest     DateTime @default(now())
+  
+  @@index([windowStart])
+}
+
+// --- Módulo de Gerenciamento de Chaves API ---
+
+model APIKey {
+  id              String    @id @default(uuid())
+  key             String    @unique
+  provider        String    @default("gemini")
+  label           String?   // Nome amigável para a chave
+  status          String    @default("active") // active, rate_limited, invalid, disabled
+  priority        Int       @default(1)
+  
+  // Limites e Uso
+  dailyTokenLimit Int       @default(1000000)
+  usedTokensToday Int       @default(0)
+  lastUsed        DateTime?
+  rateLimitedAt   DateTime?
+  cooldownUntil   DateTime?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  usageLogs       KeyUsageLog[]
+
+  @@index([status])
+  @@index([priority])
+}
+
+model KeyUsageLog {
+  id          Int      @id @default(autoincrement())
+  keyId       String
+  key         APIKey   @relation(fields: [keyId], references: [id], onDelete: Cascade)
+  tokensUsed  Int
+  endpoint    String?
+  status      Int      // HTTP Status Code
+  timestamp   DateTime @default(now())
+  
+  @@index([keyId])
+  @@index([timestamp])
+}
+
+// --- Módulo de Daily Quests ---
+
+model UserQuest {
+  id            String    @id @default(uuid())
+  userId        String
+  guildId       String
+  type          String    // MESSAGES, VOICE, DICE, GAMES, DAILY
+  targetValue   Int
+  currentValue  Int       @default(0)
+  rewardMoney   Int
+  rewardXP      Int
+  isCompleted   Boolean   @default(false)
+  isClaimed     Boolean   @default(false)
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+
+  @@index([userId, guildId])
+  @@index([expiresAt])
+}
+
+model UserVoiceState {
+  userId        String    @id
+  lastJoinedAt  DateTime
+}
+
+// Módulo de Orbes removido
+
+model UserMessageStats {
+  userId          String   @id
+  totalMessages   Int      @default(0)
+  messagesSinceDaily Int   @default(0)
+  lastDailyAt     DateTime?
+}
+
+// --- Módulo de Sugestões e Feed ---
+
+model Suggestion {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  content     String   @db.Text
+  messageId   String?  @unique
+  threadId    String?
+  status      String   @default("pending") // pending, approved, rejected
+  upvotes     Int      @default(0)
+  downvotes   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model FeedPost {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  imageUrl    String
+  caption     String?  @db.Text
+  messageId   String?  @unique
+  likes       Int      @default(0)
+  reposts     Int      @default(0)
+  comments    Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+// --- Módulo de Parcerias ---
+
+model Partnership {
+  id            Int      @id @default(autoincrement())
+  guildId       String   // ID do servidor parceiro
+  guildName     String?
+  inviteUrl     String
+  description   String   @db.Text
+  requesterId   String   // Quem pediu a parceria
+  staffId       String?  // Quem aprovou
+  status        String   @default("pending") // pending, approved, rejected
+  rejectionReason String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model StaffPartnerStats {
+  userId        String   @id
+  totalPartners Int      @default(0)
+  lastPartnerAt DateTime @default(now())
+}
+
+// --- Módulo de Tickets ---
+
+model TicketConfig {
+  guildId           String   @id
+  staffRoleIds      String[] @default([])
+  logsChannelId     String?
+  ratingChannelId   String?
+  defaultCategoryId String?
+  color             String   @default("#5865F2")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  panels            TicketPanel[]
+}
+
+model TicketPanel {
+  id              String   @id @default(uuid())
+  guildId         String
+  config          TicketConfig @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  title           String
+  description     String   @db.Text
+  bannerUrl       String?
+  channelId       String?
+  messageId       String?
+  type            String   @default("button") // button, select
+  askSubject      Boolean  @default(true)
+  askDescription  Boolean  @default(true)
+  askCloseReason  Boolean  @default(true)
+  options         Json     // [{ id, label, emoji, categoryId, welcomeMsg }]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tickets         Ticket[]
+  
+  @@index([guildId])
+}
+
+model Ticket {
+  id              String   @id @default(uuid())
+  channelId       String   @unique
+  guildId         String
+  panelId         String?
+  panel           TicketPanel? @relation(fields: [panelId], references: [id], onDelete: SetNull)
+  userId          String   // Quem abriu
+  staffId         String?  // Quem assumiu
+  optionId        String?  // ID da opção selecionada
+  subject         String?
+  description     String?  @db.Text
+  status          String   @default("open") // open, closed
+  closeReason     String?
+  closedBy        String?
+  closedAt        DateTime?
+  voiceChannelId  String?
+  addedUsers      String[] // Array de user IDs adicionados
+  openedAt        DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([guildId])
+  @@index([userId])
+  @@index([status])
+}
+
+model TicketRating {
+  id        Int      @id @default(autoincrement())
+  ticketId  String
+  guildId   String
+  userId    String   // Quem avaliou
+  staffId   String?  // Staff que atendeu
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  
+  @@index([guildId])
+  @@index([staffId])
+}

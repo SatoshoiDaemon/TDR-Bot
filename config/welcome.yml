@@ -1,0 +1,16 @@
+enabled: true
+initial_roles:
+  - "1469687780480258302"
+  - "1469687760859172874"
+  - "1469687734900883497"
+  - "1469687682643918861"
+  - "1469687677082402868"
+dm_message:
+  enabled: true
+  content: Olá {user}, seja muito bem-vindo ao **{server}**!
+  use_embed: true
+  embed:
+    title: Bem-vindo ao Trono dos Reis!
+    description: Estamos muito felizes em ter você aqui conosco. Sinta-se à vontade para interagir, participar dos eventos e subir de nível para conquistar recompensas exclusivas!
+    color: "#5865F2"
+    thumbnail: true

@@ -1,0 +1,62 @@
+# Configuração de Economia do ArgosBot
+# Gerenciado por Axiom.ts
+
+# Configurações do comando Daily
+daily:
+  base_amount: 500
+  cooldown: "24h"
+  rewards:
+    money_min: 100
+    money_max: 1000
+    xp_min: 50
+    xp_max: 500
+
+# Configurações do comando Collect (Baseado em Cargos)
+# Formato: [quantidade, id_do_cargo, cooldown]
+collect_roles:
+  - [1500, "1469497490620416082", "1d"]
+  - [1500, "1469687678109876518", "1d"]
+  - [1000, "1469687679573819423", "1d"]   
+  - [500, "1469687682006384640", "1d"] 
+
+# Sistema de Roubo Inteligente
+robbery:
+  enabled: true
+  min_wallet_to_rob: 100    # Mínimo que a vítima deve ter na mão para ser roubada
+  min_wallet_to_attempt: 50 # Mínimo que o ladrão deve ter para tentar roubar (taxa de risco)
+  
+  # Chances de sucesso baseadas no valor na mão da vítima
+  # Se o valor for menor que X, a chance é Y
+  chances:
+    - { threshold: 1000, chance: 0.7 }   # 70% de chance para valores baixos
+    - { threshold: 10000, chance: 0.5 }  # 50% de chance para valores médios
+    - { threshold: 100000, chance: 0.3 } # 30% de chance para valores altos
+    - { threshold: 1000000, chance: 0.1 } # 10% de chance para fortunas
+  
+  # Porcentagem do valor que pode ser roubado (Min e Max)
+  steal_percentage:
+    min: 0.1 # 10%
+    max: 0.5 # 50%
+  
+  # Punição em caso de falha (% do saldo do ladrão que vai para a vítima)
+  fail_penalty: 0.2 # 20%
+  
+  # Imunidade
+  immunity:
+    roles: ["1461779076585881753"] # Cargos imunes
+    users: ["1459789267814580316"] # Usuários imunes
+    inactivity_days: 3            # Usuários sem ganhar XP por X dias não podem ser roubados
+
+# Configurações de Apostas
+bets:
+  min_bet: 10
+  max_bet: 50000
+  games:
+    mines:
+      max_mines: 20
+      multipliers: [1.2, 1.5, 2.0, 5.0] # Exemplo simplificado
+    roulette:
+      multipliers:
+        red: 2
+        black: 2
+        green: 14

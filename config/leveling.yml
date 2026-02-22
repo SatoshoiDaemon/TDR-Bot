@@ -1,0 +1,51 @@
+xp_settings:
+  min_xp: 15
+  max_xp: 25
+  cooldown: 60
+  allowed_channels:
+    - "1469688067106541695"
+  ignored_channels:
+    - "1469688074224144395"
+    - "1469688073024573684"
+    - "1469688070210191523"
+    - "1469688068788195489"
+  multipliers:
+    channels:
+      "1469687979378216982": 1.5
+    roles:
+      "1469497490620416082": 4
+      "1469687678109876518": 3
+      "1469687679573819423": 2
+      "1469687682006384640": 1.5
+      "1474777181673492723": 1.25
+level_rewards:
+  roles:
+    "5": "1469687757285752985"
+    "10": "1469687755540922513"
+    "20": "1469687753942765632"
+    "25": "1469687753351495741"
+    "30": "1469687752357318856"
+    "40": "1469687751145160874"
+    "60": "1469687743566315624"
+    "80": "1469687742924460115"
+    "90": "1469687740781035755"
+    "100": "1469687739644383275"
+    "150": "1469687737753010237"
+    "200": "1469687736146464911"
+level_up_message:
+  enabled: true
+  channel_id: "1471543494345625643"
+  content: "{user} subiu de nível!"
+  use_embed: true
+  embed:
+    title: ✨ Novo Nível Alcançado!
+    description: |-
+      Parabéns {user}! Você agora é nível **{level}**.
+      {rewards}
+    color: "#39FF14"
+    thumbnail: true
+    footer: Trono dos Reis · Sistema de Evolução
+formula:
+  base_multiplier: 10
+  level_multiplier: 50
+  offset: 200

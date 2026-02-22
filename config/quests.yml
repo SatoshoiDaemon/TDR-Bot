@@ -1,0 +1,56 @@
+# ============================================
+# CONFIGURAÇÃO DE DAILY QUESTS
+# ============================================
+
+# Cargos que podem receber missões (IDs)
+# Se vazio, todos os membros recebem
+player_roles: []
+
+# Quantidade de missões diárias por usuário
+quests_per_day: 3
+
+# Configurações de Recompensas
+rewards:
+  money_multiplier: 1.0
+  xp_multiplier: 1.0
+
+# Tipos de Missões e Dificuldades
+quest_types:
+  MESSAGES:
+    name: "Mensageiro"
+    description: "Envie {target} mensagens no servidor"
+    min: 20
+    max: 100
+    reward_base_money: 10
+    reward_base_xp: 5
+  
+  VOICE:
+    name: "Tagarela"
+    description: "Passe {target} minutos em canais de voz"
+    min: 15
+    max: 120
+    reward_base_money: 15
+    reward_base_xp: 8
+  
+  DICE:
+    name: "Sortudo"
+    description: "Role dados {target} vezes"
+    min: 5
+    max: 20
+    reward_base_money: 50
+    reward_base_xp: 20
+  
+  GAMES:
+    name: "Apostador"
+    description: "Jogue {target} vezes em minigames (Blackjack, Roulette, Mines)"
+    min: 3
+    max: 15
+    reward_base_money: 100
+    reward_base_xp: 40
+
+  DAILY:
+    name: "Comprometido"
+    description: "Use o comando de recompensa diária (rg!daily)"
+    target: 1
+    reward_base_money: 300
+    reward_base_xp: 100
