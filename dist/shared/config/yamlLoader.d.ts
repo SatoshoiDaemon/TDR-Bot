@@ -50,6 +50,7 @@ export interface WelcomeConfig {
             description: string;
             color: string;
             thumbnail: boolean;
+            image?: string;
         };
     };
 }
@@ -234,6 +235,14 @@ export interface TicketYamlConfig {
     category_id: string;
     panel_channel_id: string;
 }
+export interface ChatMovementConfig {
+    enabled: boolean;
+    channel_id: string;
+    ping_role_id: string;
+    trigger_threshold_messages: number;
+    interval_hours: number;
+    questions: string[];
+}
 export declare const permissionsConfig: PermissionsConfig;
 export declare const levelingConfig: LevelingConfig;
 export declare const economyConfig: EconomyConfig;
@@ -242,3 +251,4 @@ export declare const aiConfig: AIConfig;
 export declare const questConfig: QuestConfig;
 export declare const welcomeConfig: WelcomeConfig;
 export declare const ticketConfig: TicketYamlConfig;
+export declare const chatMovementConfig: ChatMovementConfig;

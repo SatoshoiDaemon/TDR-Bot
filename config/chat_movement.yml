@@ -1,0 +1,14 @@
+enabled: true
+channel_id: ""
+ping_role_id: ""
+trigger_threshold_messages: 10
+interval_hours: 4
+questions:
+  - "Qual foi a melhor coisa que aconteceu com vocês essa semana?"
+  - "Se vocês pudessem viajar para qualquer lugar agora, para onde iriam?"
+  - "Qual jogo vocês estão jogando ultimamente?"
+  - "Conta pra gente, qual é a sua comida favorita que você poderia comer todos os dias?"
+  - "O que vocês estão assistindo de bom na Netflix ou em outras plataformas ultimamente?"
+  - "Vocês preferem frio de lascar ou calor de derreter? Por que?"
+  - "Se pudessem ter um superpoder inútil, qual seria?"
+  - "Como está indo a semana de vocês até agora?"

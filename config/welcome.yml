@@ -14,3 +14,4 @@ dm_message:
     description: Estamos muito felizes em ter você aqui conosco. Sinta-se à vontade para interagir, participar dos eventos e subir de nível para conquistar recompensas exclusivas!
     color: "#5865F2"
     thumbnail: true
+    image: ""

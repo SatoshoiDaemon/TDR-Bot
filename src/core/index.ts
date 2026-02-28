@@ -16,6 +16,7 @@ import { EventScheduler } from '@scheduler/eventScheduler.js';
 import { AIKeyScheduler } from '@scheduler/aiKeyScheduler.js';
 import { VoiceQuestScheduler } from '@scheduler/voiceQuestScheduler.js';
 import { StarBoardScheduler } from '@scheduler/starBoardScheduler.js';
+import { ChatMovementScheduler } from '@scheduler/chatMovementScheduler.js';
 import { SuggestionService } from '@services/suggestionService.js';
 import { FeedService } from '@services/feedService.js';
 import { PartnershipService } from '@services/partnershipService.js';
@@ -185,6 +186,15 @@ async function bootstrap() {
         .catch(err => logger.error('⚠️ Falha ao iniciar Knowledge Seed:', err));
     } catch (err) {
       logger.error('⚠️ Erro ao carregar Knowledge Seed Service:', err);
+    }
+
+    // Iniciar Auto Chat Movement
+    try {
+      const chatMovementScheduler = new ChatMovementScheduler(client, appConfig.discord.guildId);
+      chatMovementScheduler.start();
+      logger.info('✅ Auto Chat Movement iniciado');
+    } catch (err) {
+      logger.error('⚠️ Erro ao iniciar Auto Chat Movement:', err);
     }
 
     // Iniciar Backup Service
@@ -549,6 +559,10 @@ async function bootstrap() {
 
             if (welcomeConfig.dm_message.embed.thumbnail) {
               embed.setThumbnail(member.user.displayAvatarURL());
+            }
+
+            if (welcomeConfig.dm_message.embed.image && typeof welcomeConfig.dm_message.embed.image === 'string' && welcomeConfig.dm_message.embed.image.startsWith('http')) {
+              embed.setImage(welcomeConfig.dm_message.embed.image);
             }
 
             await member.send({

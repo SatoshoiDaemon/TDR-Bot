@@ -21,4 +21,5 @@ export interface WelcomeEmbed {
     description: string;
     color: string;
     thumbnail: boolean;
+    image?: string;
 }

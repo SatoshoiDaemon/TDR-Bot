@@ -145,6 +145,10 @@ export class PartnershipService {
           new ActionRowBuilder<TextInputBuilder>().addComponents(
             new TextInputBuilder().setCustomId('bot_invite').setLabel('Convite para o Bot (Opcional)')
               .setStyle(TextInputStyle.Short).setRequired(false)
+          ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder().setCustomId('image_url').setLabel('URL de Imagem/Banner (Opcional)')
+              .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('https://i.imgur.com/...')
           )
         );
 
@@ -183,6 +187,10 @@ export class PartnershipService {
           .setThumbnail(originalEmbed.thumbnail?.url || null)
           .setFooter({ text: EMBED_CREDIT })
           .setTimestamp();
+
+        if (originalEmbed.image?.url) {
+          postEmbed.setImage(originalEmbed.image.url);
+        }
 
         await partnershipChannel.send({ embeds: [postEmbed] });
         logger.info(`[Partnership] Parceria aprovada e postada no canal ${pConfig.partnershipChannelId}`);
@@ -241,6 +249,13 @@ export class PartnershipService {
       const description = interaction.fields.getTextInputValue('description');
       const botInvite = interaction.fields.getTextInputValue('bot_invite');
 
+      let imageUrl: string | null = null;
+      try {
+        imageUrl = interaction.fields.getTextInputValue('image_url');
+      } catch (e) {
+        // Optional field might not exist
+      }
+
       if (description.includes('@everyone') || description.includes('@here')) {
         return interaction.reply({ content: '❌ Menções de `@everyone` ou `@here` não são permitidas.', flags: MessageFlags.Ephemeral });
       }
@@ -292,6 +307,7 @@ export class PartnershipService {
         .setTimestamp();
 
       if (botInvite) embed.addFields({ name: '🤖 Convite do Bot', value: botInvite });
+      if (imageUrl && imageUrl.startsWith('http')) embed.setImage(imageUrl);
 
       const row = new ActionRowBuilder<any>().addComponents(
         { type: 2, style: 3, label: 'Aprovar', custom_id: `partner_approve_${interaction.user.id}` },

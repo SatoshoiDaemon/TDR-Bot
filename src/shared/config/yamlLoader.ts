@@ -92,6 +92,7 @@ export interface WelcomeConfig {
       description: string;
       color: string;
       thumbnail: boolean;
+      image?: string;
     };
   };
 }
@@ -278,6 +279,15 @@ export interface TicketYamlConfig {
   panel_channel_id: string;
 }
 
+export interface ChatMovementConfig {
+  enabled: boolean;
+  channel_id: string;
+  ping_role_id: string;
+  trigger_threshold_messages: number;
+  interval_hours: number;
+  questions: string[];
+}
+
 // Exportar instâncias carregadas
 export const permissionsConfig = loadYamlConfig<PermissionsConfig>('permissions.yml');
 export const levelingConfig = loadYamlConfig<LevelingConfig>('leveling.yml');
@@ -287,3 +297,4 @@ export const aiConfig = loadYamlConfig<AIConfig>('ai.yml');
 export const questConfig = loadYamlConfig<QuestConfig>('quests.yml');
 export const welcomeConfig = loadYamlConfig<WelcomeConfig>('welcome.yml');
 export const ticketConfig = loadYamlConfig<TicketYamlConfig>('tickets.yml');
+export const chatMovementConfig = loadYamlConfig<ChatMovementConfig>('chat_movement.yml');

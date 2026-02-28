@@ -120,7 +120,8 @@ export class PartnershipService {
                 modal.addComponents(new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('invite').setLabel('Link do Servidor (Convite)')
                     .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder('https://discord.gg/exemplo')), new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('description').setLabel('Descrição do Servidor')
                     .setStyle(TextInputStyle.Paragraph).setRequired(true).setPlaceholder('Conte um pouco sobre o seu servidor...')), new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bot_invite').setLabel('Convite para o Bot (Opcional)')
-                    .setStyle(TextInputStyle.Short).setRequired(false)));
+                    .setStyle(TextInputStyle.Short).setRequired(false)), new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('image_url').setLabel('URL de Imagem/Banner (Opcional)')
+                    .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('https://i.imgur.com/...')));
                 return await interaction.showModal(modal);
             }
             const requesterId = parts[2];
@@ -149,6 +150,9 @@ export class PartnershipService {
                     .setThumbnail(originalEmbed.thumbnail?.url || null)
                     .setFooter({ text: EMBED_CREDIT })
                     .setTimestamp();
+                if (originalEmbed.image?.url) {
+                    postEmbed.setImage(originalEmbed.image.url);
+                }
                 await partnershipChannel.send({ embeds: [postEmbed] });
                 logger.info(`[Partnership] Parceria aprovada e postada no canal ${pConfig.partnershipChannelId}`);
                 // Atualizar mensagem de análise
@@ -203,6 +207,13 @@ export class PartnershipService {
             const invite = interaction.fields.getTextInputValue('invite');
             const description = interaction.fields.getTextInputValue('description');
             const botInvite = interaction.fields.getTextInputValue('bot_invite');
+            let imageUrl = null;
+            try {
+                imageUrl = interaction.fields.getTextInputValue('image_url');
+            }
+            catch (e) {
+                // Optional field might not exist
+            }
             if (description.includes('@everyone') || description.includes('@here')) {
                 return interaction.reply({ content: '❌ Menções de `@everyone` ou `@here` não são permitidas.', flags: MessageFlags.Ephemeral });
             }
@@ -242,6 +253,8 @@ export class PartnershipService {
                 .setTimestamp();
             if (botInvite)
                 embed.addFields({ name: '🤖 Convite do Bot', value: botInvite });
+            if (imageUrl && imageUrl.startsWith('http'))
+                embed.setImage(imageUrl);
             const row = new ActionRowBuilder().addComponents({ type: 2, style: 3, label: 'Aprovar', custom_id: `partner_approve_${interaction.user.id}` }, { type: 2, style: 4, label: 'Rejeitar', custom_id: `partner_reject_${interaction.user.id}` });
             await analysisChannel.send({ embeds: [embed], components: [row] });
             await prisma.partnership.create({

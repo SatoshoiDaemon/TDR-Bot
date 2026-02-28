@@ -43,4 +43,5 @@ export const aiConfig = loadYamlConfig('ai.yml');
 export const questConfig = loadYamlConfig('quests.yml');
 export const welcomeConfig = loadYamlConfig('welcome.yml');
 export const ticketConfig = loadYamlConfig('tickets.yml');
+export const chatMovementConfig = loadYamlConfig('chat_movement.yml');
 //# sourceMappingURL=yamlLoader.js.map
