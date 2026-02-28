@@ -1,0 +1,1 @@
+{"version":3,"file":"slap.js","sourceRoot":"","sources":["../../../src/commands/roleplay/slap.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,qBAAqB,EAAE,MAAM,eAAe,CAAC;AAEtD,MAAM,CAAC,MAAM,WAAW,GAAG,qBAAqB,CAAC;IAC7C,IAAI,EAAE,MAAM;IACZ,WAAW,EAAE,sBAAsB;IACnC,UAAU,EAAE,qCAAqC;IACjD,QAAQ,EAAE,6CAA6C;IACvD,WAAW,EAAE,UAAU;CAC1B,CAAC,CAAC"}

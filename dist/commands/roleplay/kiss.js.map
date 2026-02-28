@@ -1,0 +1,1 @@
+{"version":3,"file":"kiss.js","sourceRoot":"","sources":["../../../src/commands/roleplay/kiss.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,qBAAqB,EAAE,MAAM,eAAe,CAAC;AAEtD,MAAM,CAAC,MAAM,WAAW,GAAG,qBAAqB,CAAC;IAC7C,IAAI,EAAE,MAAM;IACZ,WAAW,EAAE,uBAAuB;IACpC,UAAU,EAAE,gDAAgD;IAC5D,QAAQ,EAAE,oCAAoC;IAC9C,WAAW,EAAE,UAAU;CAC1B,CAAC,CAAC"}

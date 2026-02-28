@@ -1,5 +1,4 @@
 import { GuildChannel, ChannelType, Collection } from 'discord.js';
-import { prisma } from '../database/client.js';
 import { MediaService } from './mediaService.js';
 export class MirrorService {
     client;
@@ -146,9 +145,9 @@ export class MirrorService {
                 const messagesArray = Array.from(messagesCollection.values());
                 const sortedMessages = messagesArray.reverse();
                 for (const message of sortedMessages) {
-                    // Check if message already mirrored (anti-duplicação via Prisma)
-                    const existing = await prisma.mirroredMessage.findUnique({ where: { messageId: message.id } });
-                    if (existing) {
+                    // Check if message already mirrored (anti-duplicação via SnapshotDB)
+                    const isMirrored = await this.database.isMessageMirrored(message.id);
+                    if (isMirrored) {
                         totalSkipped++;
                         continue;
                     }

@@ -27,6 +27,9 @@ export const blackjackCommand = {
         if (isNaN(bet) || bet < economyConfig.bets.min_bet) {
             return interactionOrMessage.reply(`❌ Aposta mínima: ${economyConfig.bets.min_bet} Dracmas.`);
         }
+        if (bet > economyConfig.bets.max_bet) {
+            return interactionOrMessage.reply(`❌ Aposta máxima: ${economyConfig.bets.max_bet} Dracmas.`);
+        }
         // Verificação de saldo
         const balance = await EconomyService.getBalance(userId);
         if (balance.wallet < BigInt(bet)) {
@@ -178,13 +181,12 @@ export const blackjackCommand = {
             }
         });
         collector.on('end', async (_collected, reason) => {
-            // Timeout - devolver aposta
+            // Timeout - perder aposta (Corrige exploit onde o player deixa o tempo acabar se a mão for ruim para não perder saldo)
             if (reason === 'time' && !gameOver) {
-                await EconomyService.addMoney(userId, bet, 'wallet');
-                logger.info(`[Blackjack] ${userId} timeout, aposta devolvida`);
+                logger.info(`[Blackjack] ${userId} timeout, aposta perdida`);
                 const timeoutEmbed = createEmbed(false)
-                    .setColor(EMBED_COLORS.WARNING)
-                    .setDescription('⏱️ **Tempo esgotado!** Aposta devolvida.');
+                    .setColor(EMBED_COLORS.ERROR)
+                    .setDescription('⏱️ **Tempo esgotado!** Você demorou muito para jogar e perdeu a aposta por W.O.');
                 try {
                     // Corrigido: editar a mensagem original corretamente
                     if (response instanceof Message) {

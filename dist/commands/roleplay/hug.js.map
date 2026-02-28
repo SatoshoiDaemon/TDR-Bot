@@ -1,0 +1,1 @@
+{"version":3,"file":"hug.js","sourceRoot":"","sources":["../../../src/commands/roleplay/hug.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,qBAAqB,EAAE,MAAM,eAAe,CAAC;AAEtD,MAAM,CAAC,MAAM,UAAU,GAAG,qBAAqB,CAAC;IAC5C,IAAI,EAAE,KAAK;IACX,WAAW,EAAE,iCAAiC;IAC9C,UAAU,EAAE,+CAA+C;IAC3D,QAAQ,EAAE,4CAA4C;IACtD,WAAW,EAAE,SAAS;CACzB,CAAC,CAAC"}

@@ -10,6 +10,9 @@ import { Message } from 'discord.js';
  * - Atribuição de cargos
  */
 export declare class PartnershipService {
+    private static cachedConfig;
+    private static configCacheTime;
+    private static getConfig;
     /**
      * Detecta e processa convites de Discord em mensagens
      * Incrementa estatísticas e envia notificações
@@ -27,4 +30,5 @@ export declare class PartnershipService {
      * Processa análise de pedidos de parceria (aprovação/rejeição)
      */
     static handleAnalysis(interaction: any): Promise<any>;
+    static handleModalSubmit(interaction: any): Promise<any>;
 }

@@ -43,8 +43,8 @@ export declare class TicketService {
         userId: string;
         status: string;
         updatedAt: Date;
-        panelId: string | null;
         staffId: string | null;
+        panelId: string | null;
         optionId: string | null;
         subject: string | null;
         closeReason: string | null;
@@ -71,8 +71,8 @@ export declare class TicketService {
         userId: string;
         status: string;
         updatedAt: Date;
-        panelId: string | null;
         staffId: string | null;
+        panelId: string | null;
         optionId: string | null;
         subject: string | null;
         closeReason: string | null;
@@ -93,8 +93,8 @@ export declare class TicketService {
         userId: string;
         status: string;
         updatedAt: Date;
-        panelId: string | null;
         staffId: string | null;
+        panelId: string | null;
         optionId: string | null;
         subject: string | null;
         closeReason: string | null;
@@ -136,8 +136,8 @@ export declare class TicketService {
         userId: string;
         status: string;
         updatedAt: Date;
-        panelId: string | null;
         staffId: string | null;
+        panelId: string | null;
         optionId: string | null;
         subject: string | null;
         closeReason: string | null;
@@ -158,8 +158,8 @@ export declare class TicketService {
         userId: string;
         status: string;
         updatedAt: Date;
-        panelId: string | null;
         staffId: string | null;
+        panelId: string | null;
         optionId: string | null;
         subject: string | null;
         closeReason: string | null;
@@ -178,10 +178,10 @@ export declare class TicketService {
         id: string;
         guildId: string;
         channelId: string | null;
-        messageId: string | null;
         options: import("@prisma/client/runtime/library").JsonValue;
         description: string;
         updatedAt: Date;
+        messageId: string | null;
         title: string;
         bannerUrl: string | null;
         askSubject: boolean;
@@ -210,10 +210,10 @@ export declare class TicketService {
         id: string;
         guildId: string;
         channelId: string | null;
-        messageId: string | null;
         options: import("@prisma/client/runtime/library").JsonValue;
         description: string;
         updatedAt: Date;
+        messageId: string | null;
         title: string;
         bannerUrl: string | null;
         askSubject: boolean;
