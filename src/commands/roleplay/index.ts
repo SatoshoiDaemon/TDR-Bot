@@ -98,3 +98,11 @@ export const cryCommand = createRoleplayCommand({
   soloText: '{user} está chorando sozinho no canto... 😭',
   apiEndpoint: 'sfw/cry'
 });
+
+export const patCommand = createRoleplayCommand({
+  name: 'pat',
+  description: 'Faça carinho (pat) em alguém',
+  actionText: '🐾 {user} fez carinho em {target}!',
+  soloText: '{user} quer receber carinho...',
+  apiEndpoint: 'sfw/pat'
+});
