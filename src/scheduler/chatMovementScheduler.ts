@@ -28,6 +28,14 @@ export class ChatMovementScheduler {
     async run() {
         if (!chatMovementConfig?.enabled) return;
 
+        // Horário de silêncio: entre 23:00 e 10:00 (Horário de Brasília, UTC-3)
+        const nowBRT = new Date(Date.now() - (3 * 60 * 60 * 1000)); // UTC-3
+        const hourBRT = nowBRT.getUTCHours();
+        if (hourBRT >= 23 || hourBRT < 10) {
+            logger.info(`[AutoChat] Horário de silêncio (${hourBRT}h BRT). Pulando verificação.`);
+            return;
+        }
+
         try {
             const channelId = chatMovementConfig.channel_id;
             const pingRoleId = chatMovementConfig.ping_role_id;

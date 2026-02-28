@@ -73,6 +73,18 @@ export class PartnershipService {
         try {
           await mentionedMember.roles.add(pConfig.partnerRoleId);
           logger.info(`[Partnership] Cargo de parceiro atribuído a ${mentionedMember.id}`);
+
+          // Enviar DM de agradecimento ao parceiro
+          try {
+            await mentionedMember.send(
+              `🤝 **Obrigado pela parceria com o ${message.guild!.name}!**\n\n` +
+              `Agradecemos por fazer parte da nossa rede de parcerias. Sua presença é muito importante para nós!\n\n` +
+              `⚠️ **Atenção:** Caso você saia do servidor, a parceria será automaticamente desfeita.`
+            );
+            logger.info(`[Partnership] DM de agradecimento enviada para ${mentionedMember.id}`);
+          } catch (dmErr) {
+            logger.warn(`[Partnership] Não foi possível enviar DM para ${mentionedMember.id} (DMs fechadas).`);
+          }
         } catch (err) {
           logger.error('[Partnership] Erro ao atribuir cargo de parceiro:', err);
         }

@@ -2,7 +2,7 @@ enabled: true
 channel_id: "1469688067106541695"
 ping_role_id: "1469687781705126001"
 trigger_threshold_messages: 10
-interval_hours: 4
+interval_hours: 1
 questions:
   - "Qual anime vocês acham superestimado e por quê?"
   - "Qual vilão de anime tem a melhor motivação da história?"
