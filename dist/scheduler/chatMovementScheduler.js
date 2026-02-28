@@ -35,17 +35,25 @@ export class ChatMovementScheduler {
             const channel = await guild.channels.fetch(channelId);
             if (!channel || !channel.isTextBased())
                 return;
-            // Fetch the last maximum number of messages (say 50 max to check timeframe)
-            const messages = await channel.messages.fetch({ limit: 50 });
+            // Fetch the last maximum number of messages from Discord (Up to 100 which is the hard API limit for a single fetch)
+            const messages = await channel.messages.fetch({ limit: 100 });
             const hoursAgo = Date.now() - ((chatMovementConfig.interval_hours || 4) * 60 * 60 * 1000);
             // Filter recent messages in that timeframe
             const recentMessages = messages.filter(msg => msg.createdTimestamp >= hoursAgo);
-            // Se o canal estiver mais morto que a taxa de conversação, jogue a pergunta
+            // Se o canal estiver mais morto que a taxa de conversação aceitável, e a ÚLTIMA MENSAGEM enviada tiver sido há pelo menos 1H para trás (Evitando cortar uma conversa que está morrendo agora)
             if (recentMessages.size <= threshold) {
-                const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
-                const pingMessage = pingRoleId ? `<@&${pingRoleId}>` : '';
-                await channel.send(`${pingMessage}\n\n💬 **Hora do Papo:**\n${randomQuestion}`);
-                logger.info(`[AutoChat] O canal estava quieto (${recentMessages.size} msgs nas últimas ${chatMovementConfig.interval_hours}H). Uma pergunta foi enviada.`);
+                // Pega a mensagem mais recente enviada no grupo
+                const freshestMessage = messages.first();
+                const wasLastMessageLongTimeAgo = freshestMessage ? (Date.now() - freshestMessage.createdTimestamp) > (60 * 60 * 1000) : true;
+                if (wasLastMessageLongTimeAgo) {
+                    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+                    const pingMessage = pingRoleId ? `<@&${pingRoleId}>` : '';
+                    await channel.send(`${pingMessage}\n\n💬 **Hora do Papo:**\n${randomQuestion}`);
+                    logger.info(`[AutoChat] O canal estava quieto (${recentMessages.size} msgs nas últimas ${chatMovementConfig.interval_hours}H). Uma pergunta foi enviada.`);
+                }
+                else {
+                    logger.info(`[AutoChat] O canal teve poucas msgs (${recentMessages.size}), mas a conversa ainda não esfriou completamente (A última msg foi em menos de 1h). Pulo.`);
+                }
             }
         }
         catch (error) {
