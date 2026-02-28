@@ -17,29 +17,45 @@ export class StarBoardService {
             });
             if (users.length === 0)
                 return;
-            const randomUser = users[Math.floor(Math.random() * users.length)];
-            const member = await guild.members.fetch(randomUser.id).catch(() => null);
-            if (!member)
+            let member = null;
+            let randomUser = null;
+            // Misturar usuários para aleatoriedade
+            const shuffledUsers = users.sort(() => 0.5 - Math.random());
+            for (const u of shuffledUsers) {
+                const m = await guild.members.fetch(u.id).catch(() => null);
+                if (m) {
+                    await m.user.fetch().catch(() => null); // Force fetch banner/avatar info fully
+                    // Filtro anti avatar/banner vazio: Se tiver custom avatar, banner ou uma imagem de perfil configurada
+                    if (m.user.avatar || m.user.banner || u.profileImage) {
+                        member = m;
+                        randomUser = u;
+                        break;
+                    }
+                }
+            }
+            if (!member || !randomUser)
                 return;
             const embed = new EmbedBuilder()
                 .setColor(EMBED_COLORS.PRIMARY)
                 .setTitle(`🌟 Destaque do Momento: ${member.user.username}`)
                 .setDescription(randomUser.aboutMe || 'Um cidadão de TDR.')
-                .setThumbnail(member.user.displayAvatarURL())
+                .setImage(member.user.displayAvatarURL({ size: 1024 }))
                 .addFields({ name: '⭐ Nível', value: `\`${randomUser.level?.level || 0}\``, inline: true }, { name: '📅 No Servidor', value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>`, inline: true })
                 .setFooter({ text: `Clique na estrela para apoiar este membro! • ${EMBED_CREDIT}` })
                 .setTimestamp();
-            if (member.user.bannerURL()) {
-                embed.setImage(member.user.bannerURL({ size: 1024 }));
-            }
-            else if (randomUser.profileImage) {
-                embed.setImage(randomUser.profileImage);
-            }
             const row = new ActionRowBuilder().addComponents(new ButtonBuilder()
                 .setCustomId(`star_${member.id}`)
                 .setLabel('⭐ 0')
                 .setStyle(ButtonStyle.Secondary));
             const message = await channel.send({ content: '✨ **Um novo membro foi destacado!**', embeds: [embed], components: [row] });
+            const bannerUrl = member.user.bannerURL({ size: 1024 }) || randomUser.profileImage;
+            if (bannerUrl) {
+                const bannerEmbed = new EmbedBuilder()
+                    .setColor(EMBED_COLORS.PRIMARY)
+                    .setImage(bannerUrl)
+                    .setFooter({ text: `🖼️ Banner de ${member.user.username} • ${EMBED_CREDIT}` });
+                await channel.send({ embeds: [bannerEmbed] });
+            }
             // Atualizar no banco que foi destacado
             await prisma.userProfile.upsert({
                 where: { id: member.id },

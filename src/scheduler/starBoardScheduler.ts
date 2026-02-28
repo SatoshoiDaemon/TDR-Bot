@@ -16,10 +16,10 @@ export class StarBoardScheduler {
   start() {
     logger.info('Agendador do StarBoard iniciado.');
 
-    // Executar a cada 4 horas (ajustável)
+    // Executar a cada 1.5 horas
     this.interval = setInterval(() => {
       this.run();
-    }, 4 * 60 * 60 * 1000);
+    }, 1.5 * 60 * 60 * 1000);
 
     // Execução inicial após 1 minuto para não sobrecarregar o boot
     setTimeout(() => this.run(), 60000);
