@@ -18,6 +18,26 @@ export class EventScheduler {
   constructor(client: Client) {
     this.client = client;
     EventService.loadConfig();
+    this.loadEnigmaHistory();
+  }
+
+  private async loadEnigmaHistory() {
+    const data = await prisma.systemConfig.findUnique({ where: { key: 'enigma_history' } });
+    if (data && data.value) {
+      try {
+        this.recentEnigmaIndices = JSON.parse(data.value);
+      } catch (e) {
+        this.recentEnigmaIndices = [];
+      }
+    }
+  }
+
+  private async saveEnigmaHistory() {
+    await prisma.systemConfig.upsert({
+      where: { key: 'enigma_history' },
+      update: { value: JSON.stringify(this.recentEnigmaIndices) },
+      create: { key: 'enigma_history', value: JSON.stringify(this.recentEnigmaIndices) }
+    });
   }
 
   start() {
@@ -134,6 +154,7 @@ export class EventScheduler {
     if (this.recentEnigmaIndices.length > maxRecent) {
       this.recentEnigmaIndices.shift();
     }
+    await this.saveEnigmaHistory();
 
     const enigma = pool[index];
 

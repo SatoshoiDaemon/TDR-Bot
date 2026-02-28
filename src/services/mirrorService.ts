@@ -23,7 +23,7 @@ export class MirrorService {
   constructor(
     private client: Client,
     private database: SnapshotDatabase
-  ) {}
+  ) { }
 
   async analyzeCategory(
     sourceGuildId: string,
@@ -237,9 +237,9 @@ export class MirrorService {
         const sortedMessages = messagesArray.reverse();
 
         for (const message of sortedMessages) {
-          // Check if message already mirrored (anti-duplicação via Prisma)
-          const existing = await prisma.mirroredMessage.findUnique({ where: { messageId: message.id } });
-          if (existing) {
+          // Check if message already mirrored (anti-duplicação via SnapshotDB)
+          const isMirrored = await this.database.isMessageMirrored(message.id);
+          if (isMirrored) {
             totalSkipped++;
             continue;
           }
@@ -298,7 +298,7 @@ export class MirrorService {
           // Fallback: Send without embeds if it fails (e.g., 404 on images)
           if (embedError.code === 50006 || embedError.message?.includes('404')) {
             console.warn(`Embed falhou para mensagem ${sourceMessage.id}, enviando sem imagens`);
-            
+
             // Remove embeds and resend
             delete messageOptions.embeds;
             if (messageOptions.content) {
@@ -425,7 +425,7 @@ export class MirrorService {
 
       // Fetch active threads
       const activeThreads = await sourceChannel.threads.fetchActive();
-      
+
       // Fetch archived threads
       const archivedThreads = await sourceChannel.threads.fetchArchived();
 

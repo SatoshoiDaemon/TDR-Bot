@@ -284,6 +284,8 @@ async function bootstrap() {
       try {
         if (interaction.customId.startsWith('modal_feed_')) {
           return await FeedService.handleModal(interaction);
+        } else if (interaction.customId === 'modal_partner_apply') {
+          return await PartnershipService.handleModalSubmit(interaction);
         }
       } catch (err) {
         logger.error('❌ Erro ao processar submissão de modal:', err);

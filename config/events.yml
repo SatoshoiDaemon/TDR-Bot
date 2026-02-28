@@ -29,8 +29,8 @@ random_events:
     enabled: true
     chance: 0.1
     duration_minutes: 15
-    min_amount: 10
-    max_amount: 50
+    min_amount: 2
+    max_amount: 10
     message: 💸 **CHUVA DE DRACMAS!** Pelos próximos {duration} minutos, cada mensagem enviada pode te dar dracmas!
   hot_zone:
     enabled: true
@@ -41,8 +41,8 @@ random_events:
   enigma_challenge:
     enabled: true
     chance: 0.4
-    reward_min: 500
-    reward_max: 2000
+    reward_min: 100
+    reward_max: 500
     types:
       - anagram
       - math
@@ -50,5 +50,5 @@ random_events:
   diamond_reaction:
     enabled: true
     chance: 0.05
-    reward: 5000
+    reward: 500
     message: 💎 Um diamante apareceu! Seja o primeiro a reagir para coletar!

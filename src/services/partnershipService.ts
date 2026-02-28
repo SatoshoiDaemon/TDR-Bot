@@ -1,6 +1,4 @@
-import { Client, EmbedBuilder, TextChannel, Message, GuildMember ,
-    MessageFlags
-} from 'discord.js';
+import { Client, EmbedBuilder, TextChannel, Message, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags } from 'discord.js';
 import { prisma } from '@database/client.js';
 import { logger } from '@shared/logger.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
@@ -16,6 +14,19 @@ import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
  * - Atribuição de cargos
  */
 export class PartnershipService {
+  private static cachedConfig: any = null;
+  private static configCacheTime: number = 0;
+
+  private static async getConfig() {
+    if (this.cachedConfig && Date.now() - this.configCacheTime < 60000) {
+      return this.cachedConfig;
+    }
+    const config = await prisma.systemConfig.findUnique({ where: { key: 'partnership_config' } });
+    this.cachedConfig = config ? JSON.parse(config.value) : null;
+    this.configCacheTime = Date.now();
+    return this.cachedConfig;
+  }
+
   /**
    * Detecta e processa convites de Discord em mensagens
    * Incrementa estatísticas e envia notificações
@@ -24,9 +35,9 @@ export class PartnershipService {
     if (message.author.bot || !message.guild) return;
 
     try {
-      // Buscar configuração de parcerias
-      const config = await prisma.systemConfig.findUnique({ where: { key: 'partnership_config' } });
-      const pConfig = config ? JSON.parse(config.value) : null;
+      if (!message.content.includes('discord.gg/') && !message.content.includes('discord.com/invite/')) return;
+
+      const pConfig = await this.getConfig();
 
       if (!pConfig || message.channel.id !== pConfig.partnershipChannelId) return;
 
@@ -115,12 +126,34 @@ export class PartnershipService {
     try {
       const { customId, message, user } = interaction;
       const parts = customId.split('_');
-      const action = parts[1]; // approve ou reject
+      const action = parts[1]; // apply, approve ou reject
+
+      if (action === 'apply') {
+        const modal = new ModalBuilder()
+          .setCustomId('modal_partner_apply')
+          .setTitle('Pedido de Parceria');
+
+        modal.addComponents(
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder().setCustomId('invite').setLabel('Link do Servidor (Convite)')
+              .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder('https://discord.gg/exemplo')
+          ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder().setCustomId('description').setLabel('Descrição do Servidor')
+              .setStyle(TextInputStyle.Paragraph).setRequired(true).setPlaceholder('Conte um pouco sobre o seu servidor...')
+          ),
+          new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder().setCustomId('bot_invite').setLabel('Convite para o Bot (Opcional)')
+              .setStyle(TextInputStyle.Short).setRequired(false)
+          )
+        );
+
+        return await interaction.showModal(modal);
+      }
+
       const requesterId = parts[2];
 
-      // Buscar configuração
-      const config = await prisma.systemConfig.findUnique({ where: { key: 'partnership_config' } });
-      const pConfig = config ? JSON.parse(config.value) : null;
+      const pConfig = await this.getConfig();
 
       if (action === 'approve') {
         // Aprovar parceria
@@ -199,6 +232,89 @@ export class PartnershipService {
       } catch (replyErr) {
         logger.error('[Partnership] Erro ao enviar mensagem de erro:', replyErr);
       }
+    }
+  }
+
+  static async handleModalSubmit(interaction: any) {
+    try {
+      const invite = interaction.fields.getTextInputValue('invite');
+      const description = interaction.fields.getTextInputValue('description');
+      const botInvite = interaction.fields.getTextInputValue('bot_invite');
+
+      if (description.includes('@everyone') || description.includes('@here')) {
+        return interaction.reply({ content: '❌ Menções de `@everyone` ou `@here` não são permitidas.', flags: MessageFlags.Ephemeral });
+      }
+
+      const inviteData = await interaction.client.fetchInvite(invite).catch(() => null);
+      if (!inviteData) {
+        return interaction.reply({ content: '❌ Link de convite inválido ou expirado.', flags: MessageFlags.Ephemeral });
+      }
+
+      const pConfig = await this.getConfig();
+
+      if (pConfig) {
+        if (pConfig.minMembers && inviteData.memberCount && inviteData.memberCount < pConfig.minMembers) {
+          return interaction.reply({ content: `❌ Seu servidor precisa de pelo menos **${pConfig.minMembers}** membros.`, flags: MessageFlags.Ephemeral });
+        }
+        if (pConfig.blacklist?.includes(inviteData.guild?.id) || pConfig.blacklist?.includes(inviteData.guild?.name)) {
+          return interaction.reply({ content: '❌ Este servidor está na lista negra.', flags: MessageFlags.Ephemeral });
+        }
+        const lastPartnership = await prisma.partnership.findFirst({
+          where: { guildId: inviteData.guild?.id, status: 'approved' },
+          orderBy: { createdAt: 'desc' }
+        });
+        if (lastPartnership && pConfig.cooldownDays) {
+          const cooldownMs = pConfig.cooldownDays * 24 * 60 * 60 * 1000;
+          if (Date.now() - lastPartnership.createdAt.getTime() < cooldownMs) {
+            return interaction.reply({ content: `❌ Tempo de renovação não concluído.`, flags: MessageFlags.Ephemeral });
+          }
+        }
+      }
+
+      if (!pConfig?.analysisChannelId) {
+        return interaction.reply({ content: '❌ O canal de análise não está configurado.', flags: MessageFlags.Ephemeral });
+      }
+
+      const analysisChannel = await interaction.client.channels.fetch(pConfig.analysisChannelId) as TextChannel;
+
+      const embed = new EmbedBuilder()
+        .setColor(EMBED_COLORS.WARNING)
+        .setTitle('📝 Novo Pedido de Parceria')
+        .setThumbnail(inviteData.guild?.iconURL() || null)
+        .addFields(
+          { name: '🏰 Servidor', value: `**${inviteData.guild?.name}** (\`${inviteData.guild?.id}\`)`, inline: false },
+          { name: '👥 Membros', value: `\`${inviteData.memberCount || '?'}\``, inline: true },
+          { name: '👤 Solicitante', value: `${interaction.user.tag} (\`${interaction.user.id}\`)`, inline: true },
+          { name: '🔗 Convite', value: invite, inline: false },
+          { name: '📝 Descrição', value: description.substring(0, 1024) }
+        )
+        .setFooter({ text: `ID do Pedido: Pendente • ${EMBED_CREDIT}` })
+        .setTimestamp();
+
+      if (botInvite) embed.addFields({ name: '🤖 Convite do Bot', value: botInvite });
+
+      const row = new ActionRowBuilder<any>().addComponents(
+        { type: 2, style: 3, label: 'Aprovar', custom_id: `partner_approve_${interaction.user.id}` },
+        { type: 2, style: 4, label: 'Rejeitar', custom_id: `partner_reject_${interaction.user.id}` }
+      );
+
+      await analysisChannel.send({ embeds: [embed], components: [row] });
+
+      await prisma.partnership.create({
+        data: {
+          guildId: inviteData.guild?.id || 'unknown',
+          guildName: inviteData.guild?.name,
+          inviteUrl: invite,
+          description,
+          requesterId: interaction.user.id,
+          status: 'pending'
+        }
+      });
+
+      await interaction.reply({ content: '✅ Seu pedido foi enviado para análise!', flags: MessageFlags.Ephemeral });
+    } catch (error) {
+      logger.error('Erro ao processar envio de modal:', error);
+      await interaction.reply({ content: '❌ Ocorreu um erro ao processar o modal.', flags: MessageFlags.Ephemeral });
     }
   }
 }
