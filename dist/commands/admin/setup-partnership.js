@@ -13,7 +13,8 @@ export const setupPartnershipCommand = {
         .addRoleOption(o => o.setName('cargo_parceiro').setDescription('Cargo dado ao representante da parceria').setRequired(true))
         .addRoleOption(o => o.setName('cargo_ping').setDescription('Cargo que será mencionado nas postagens').setRequired(false))
         .addIntegerOption(o => o.setName('min_membros').setDescription('Quantidade mínima de membros no servidor parceiro').setRequired(false))
-        .addIntegerOption(o => o.setName('cooldown').setDescription('Dias mínimos para renovar uma parceria').setRequired(false)),
+        .addIntegerOption(o => o.setName('cooldown').setDescription('Dias mínimos para renovar uma parceria').setRequired(false))
+        .addStringOption(o => o.setName('imagem').setDescription('URL da imagem/banner para os embeds de parceria').setRequired(false)),
     async execute(interaction) {
         const partnershipChannelId = interaction.options.getChannel('canal_parcerias', true).id;
         const analysisChannelId = interaction.options.getChannel('canal_analise', true).id;
@@ -21,6 +22,7 @@ export const setupPartnershipCommand = {
         const pingRoleId = interaction.options.getRole('cargo_ping')?.id;
         const minMembers = interaction.options.getInteger('min_membros');
         const cooldownDays = interaction.options.getInteger('cooldown');
+        const imageUrl = interaction.options.getString('imagem');
         try {
             const config = {
                 partnershipChannelId,
@@ -29,6 +31,7 @@ export const setupPartnershipCommand = {
                 pingRoleId,
                 minMembers,
                 cooldownDays,
+                imageUrl: imageUrl || null,
                 blacklist: []
             };
             await prisma.systemConfig.upsert({

@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, TextChannel, Message, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, MessageFlags } from 'discord.js';
+import { Client, EmbedBuilder, TextChannel, Message, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
 import { prisma } from '@database/client.js';
 import { logger } from '@shared/logger.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
@@ -139,16 +139,10 @@ export class PartnershipService {
               .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder('https://discord.gg/exemplo')
           ),
           new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder().setCustomId('description').setLabel('Descrição do Servidor')
-              .setStyle(TextInputStyle.Paragraph).setRequired(true).setPlaceholder('Conte um pouco sobre o seu servidor...')
-          ),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder().setCustomId('bot_invite').setLabel('Convite para o Bot (Opcional)')
-              .setStyle(TextInputStyle.Short).setRequired(false)
-          ),
-          new ActionRowBuilder<TextInputBuilder>().addComponents(
-            new TextInputBuilder().setCustomId('image_url').setLabel('URL de Imagem/Banner (Opcional)')
-              .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('https://i.imgur.com/...')
+            new TextInputBuilder().setCustomId('message').setLabel('Mensagem de Parceria')
+              .setStyle(TextInputStyle.Paragraph).setRequired(true)
+              .setPlaceholder('Cole aqui sua mensagem completa de parceria (descrição, links, etc.)')
+              .setMaxLength(4000)
           )
         );
 
@@ -170,7 +164,7 @@ export class PartnershipService {
 
         // Extrair informações do embed original
         const serverField = originalEmbed.fields.find((f: any) => f.name === '🏰 Servidor');
-        const descField = originalEmbed.fields.find((f: any) => f.name === '📝 Descrição');
+        const msgField = originalEmbed.fields.find((f: any) => f.name === '📝 Mensagem');
         const inviteField = originalEmbed.fields.find((f: any) => f.name === '🔗 Convite');
 
         if (!serverField || !inviteField) {
@@ -182,14 +176,15 @@ export class PartnershipService {
         const postEmbed = new EmbedBuilder()
           .setColor(EMBED_COLORS.PRIMARY)
           .setTitle(`🤝 Parceria: ${serverName}`)
-          .setDescription(descField?.value || 'Sem descrição')
+          .setDescription(msgField?.value || 'Sem descrição')
           .addFields({ name: '🔗 Entre agora!', value: inviteField.value })
           .setThumbnail(originalEmbed.thumbnail?.url || null)
           .setFooter({ text: EMBED_CREDIT })
           .setTimestamp();
 
-        if (originalEmbed.image?.url) {
-          postEmbed.setImage(originalEmbed.image.url);
+        // Imagem configurada pelo admin no /setup-partnership
+        if (pConfig.imageUrl) {
+          postEmbed.setImage(pConfig.imageUrl);
         }
 
         await partnershipChannel.send({ embeds: [postEmbed] });
@@ -246,17 +241,9 @@ export class PartnershipService {
   static async handleModalSubmit(interaction: any) {
     try {
       const invite = interaction.fields.getTextInputValue('invite');
-      const description = interaction.fields.getTextInputValue('description');
-      const botInvite = interaction.fields.getTextInputValue('bot_invite');
+      const partnerMessage = interaction.fields.getTextInputValue('message');
 
-      let imageUrl: string | null = null;
-      try {
-        imageUrl = interaction.fields.getTextInputValue('image_url');
-      } catch (e) {
-        // Optional field might not exist
-      }
-
-      if (description.includes('@everyone') || description.includes('@here')) {
+      if (partnerMessage.includes('@everyone') || partnerMessage.includes('@here')) {
         return interaction.reply({ content: '❌ Menções de `@everyone` ou `@here` não são permitidas.', flags: MessageFlags.Ephemeral });
       }
 
@@ -301,17 +288,14 @@ export class PartnershipService {
           { name: '👥 Membros', value: `\`${inviteData.memberCount || '?'}\``, inline: true },
           { name: '👤 Solicitante', value: `${interaction.user.tag} (\`${interaction.user.id}\`)`, inline: true },
           { name: '🔗 Convite', value: invite, inline: false },
-          { name: '📝 Descrição', value: description.substring(0, 1024) }
+          { name: '📝 Mensagem', value: partnerMessage.substring(0, 1024) }
         )
         .setFooter({ text: `ID do Pedido: Pendente • ${EMBED_CREDIT}` })
         .setTimestamp();
 
-      if (botInvite) embed.addFields({ name: '🤖 Convite do Bot', value: botInvite });
-      if (imageUrl && imageUrl.startsWith('http')) embed.setImage(imageUrl);
-
-      const row = new ActionRowBuilder<any>().addComponents(
-        { type: 2, style: 3, label: 'Aprovar', custom_id: `partner_approve_${interaction.user.id}` },
-        { type: 2, style: 4, label: 'Rejeitar', custom_id: `partner_reject_${interaction.user.id}` }
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder().setCustomId(`partner_approve_${interaction.user.id}`).setLabel('Aprovar').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`partner_reject_${interaction.user.id}`).setLabel('Rejeitar').setStyle(ButtonStyle.Danger)
       );
 
       await analysisChannel.send({ embeds: [embed], components: [row] });
@@ -321,7 +305,7 @@ export class PartnershipService {
           guildId: inviteData.guild?.id || 'unknown',
           guildName: inviteData.guild?.name,
           inviteUrl: invite,
-          description,
+          description: partnerMessage,
           requesterId: interaction.user.id,
           status: 'pending'
         }
@@ -330,7 +314,13 @@ export class PartnershipService {
       await interaction.reply({ content: '✅ Seu pedido foi enviado para análise!', flags: MessageFlags.Ephemeral });
     } catch (error) {
       logger.error('Erro ao processar envio de modal:', error);
-      await interaction.reply({ content: '❌ Ocorreu um erro ao processar o modal.', flags: MessageFlags.Ephemeral });
+      try {
+        if (!interaction.replied && !interaction.deferred) {
+          await interaction.reply({ content: '❌ Ocorreu um erro ao processar o modal.', flags: MessageFlags.Ephemeral });
+        }
+      } catch (replyErr) {
+        logger.error('[Partnership] Erro ao enviar mensagem de erro de modal:', replyErr);
+      }
     }
   }
 }
