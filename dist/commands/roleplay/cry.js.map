@@ -1,1 +1,0 @@
-{"version":3,"file":"cry.js","sourceRoot":"","sources":["../../../src/commands/roleplay/cry.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,qBAAqB,EAAE,MAAM,eAAe,CAAC;AAEtD,MAAM,CAAC,MAAM,UAAU,GAAG,qBAAqB,CAAC;IAC5C,IAAI,EAAE,KAAK;IACX,WAAW,EAAE,0BAA0B;IACvC,UAAU,EAAE,yDAAyD;IACrE,QAAQ,EAAE,4BAA4B;IACtC,WAAW,EAAE,SAAS;CACzB,CAAC,CAAC"}
