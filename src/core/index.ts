@@ -25,6 +25,11 @@ import { LevelService } from '@services/levelService.js';
 import { levelingConfig } from '@shared/config/yamlLoader.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
 import { TicketInteractionHandler } from '../handlers/ticketHandler.js';
+import { MentionHandler } from '../handlers/mentionHandler.js';
+import { DiceRoller } from '../utils/diceRoller.js';
+import { RollService } from '../services/rollService.js';
+import { EventService, EventType } from '@services/eventService.js';
+import { QuestService, QuestType } from '../services/questService.js';
 
 /**
  * Cliente Discord com intents necessários
@@ -335,7 +340,6 @@ async function bootstrap() {
 
     try {
       // --- Lógica de IA (Menções e Respostas) ---
-      const { MentionHandler } = await import('../handlers/mentionHandler.js');
       const handledByAI = await MentionHandler.handle(message);
       if (handledByAI) return;
     } catch (err) {
@@ -386,7 +390,6 @@ async function bootstrap() {
 
     // --- Lógica de Dados (Dice Roller) ---
     try {
-      const { DiceRoller } = await import('../utils/diceRoller.js');
       if (DiceRoller.handleMessage(message)) return;
     } catch (err) {
       logger.error('⚠️ Erro no DiceRoller:', err);
@@ -394,7 +397,6 @@ async function bootstrap() {
 
     // --- Lógica de Rolls Dinâmicos ---
     try {
-      const { RollService } = await import('../services/rollService.js');
       if (await RollService.handleMessage(message)) return;
     } catch (err) {
       logger.error('⚠️ Erro no RollService:', err);
@@ -409,7 +411,6 @@ async function bootstrap() {
 
     // --- Lógica de Eventos Aleatórios ---
     try {
-      const { EventService, EventType } = await import('@services/eventService.js');
       if (EventService.isEventActive(EventType.MONEY_RAIN)) {
         const config = EventService.getConfig().random_events.money_rain;
         const amount = Math.floor(Math.random() * (config.max_amount - config.min_amount + 1)) + config.min_amount;
@@ -426,7 +427,6 @@ async function bootstrap() {
 
     // --- Lógica de Daily Quests ---
     try {
-      const { QuestService, QuestType } = await import('../services/questService.js');
       if (message.member && QuestService.isEligible(message.member)) {
         await QuestService.generateDailyQuests(message.author.id, message.guildId!);
         await QuestService.incrementProgress(message.author.id, message.guildId!, QuestType.MESSAGES);
@@ -481,7 +481,6 @@ async function bootstrap() {
     }
 
     // Incrementar contadores de atividade para eventos
-    const { EventService } = await import('@services/eventService.js');
     EventService.trackMessage();
 
     // Incrementar UserMessageStats para Daily

@@ -61,11 +61,10 @@ export class PartnershipService {
         }
       });
 
-      // 2. Buscar posição no ranking
-      const allStats = await prisma.staffPartnerStats.findMany({
-        orderBy: { totalPartners: 'desc' }
-      });
-      const rankPosition = allStats.findIndex((s: any) => s.userId === message.author.id) + 1;
+      // 2. Buscar posição no ranking (eficiente: COUNT ao invés de buscar tudo)
+      const rankPosition = await prisma.staffPartnerStats.count({
+        where: { totalPartners: { gt: stats.totalPartners } }
+      }) + 1;
 
       // 3. Atribuir cargo de parceiro se houver menção
       const mentionedMember = message.mentions.members?.first();
