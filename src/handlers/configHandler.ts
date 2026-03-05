@@ -167,7 +167,7 @@ export class ConfigInteractionHandler {
                 .addOptions([
                     { label: 'Economia', value: 'economy', emoji: '💰', description: 'Daily, Roubo, Apostas, Coleta' },
                     { label: 'Leveling', value: 'leveling', emoji: '✨', description: 'XP, Níveis, Recompensas' },
-                    { label: 'IA (Argos)', value: 'ai', emoji: '🤖', description: 'Modelo, Respostas, Memória' },
+                    { label: 'IA (Igris)', value: 'ai', emoji: '🤖', description: 'Modelo, Respostas, Memória' },
                     { label: 'Boas-vindas', value: 'welcome', emoji: '👋', description: 'Mensagens, Cargos iniciais' },
                     { label: 'Tickets', value: 'tickets', emoji: '🎫', description: 'Suporte e Atendimento' },
                     { label: 'Eventos', value: 'events', emoji: '🎉', description: 'Double XP, Shop, Eventos Aleatórios' },

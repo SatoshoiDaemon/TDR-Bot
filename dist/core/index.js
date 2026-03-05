@@ -47,12 +47,12 @@ const databasePath = path.join(process.cwd(), 'prisma', 'dev.db');
  * Conecta ao banco, carrega comandos e inicia schedulers
  */
 async function bootstrap() {
-    logger.info('🚀 Iniciando ArgosBot — Axiom.ts · TDR');
+    logger.info('🚀 Iniciando IgrisBot — Axiom.ts · TDR');
     // Conectar ao Redis e Banco
     try {
         await connectDB();
         logger.info('✅ Banco de dados conectado');
-        await redis.set('argos:status', 'online');
+        await redis.set('igris:status', 'online');
         logger.info('✅ Conexão com Redis estabelecida');
         // Limpar cache de rank para garantir fórmula nova
         await LevelService.flushRankCache();
@@ -270,6 +270,10 @@ async function bootstrap() {
                     }
                     else if (interaction.customId.startsWith('partner_')) {
                         return await PartnershipService.handleAnalysis(interaction);
+                    }
+                    else if (interaction.customId.startsWith('star_')) {
+                        const { StarBoardService } = await import('../services/starBoardService.js');
+                        return await StarBoardService.handleStarInteraction(interaction);
                     }
                 }
             }

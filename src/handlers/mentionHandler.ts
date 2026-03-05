@@ -82,7 +82,7 @@ export class MentionHandler {
 
       // Verificar se é uma mensagem da IA (tem embed ou foi enviada pelo sistema de IA)
       const isAIMessage = referencedMessage.embeds.length > 0 &&
-        referencedMessage.embeds[0].author?.name === 'Argos AI';
+        referencedMessage.embeds[0].author?.name === 'Igris AI';
 
       if (!isAIMessage) return;
 
@@ -104,7 +104,7 @@ export class MentionHandler {
       const embed = new EmbedBuilder()
         .setColor(aiConfig.responses.embed_color as any)
         .setAuthor({
-          name: 'Argos AI',
+          name: 'Igris AI',
           iconURL: message.client.user?.displayAvatarURL()
         })
         .setDescription(response)
@@ -160,7 +160,7 @@ export class MentionHandler {
       const embed = new EmbedBuilder()
         .setColor(aiConfig.responses.embed_color as any)
         .setAuthor({
-          name: 'Argos AI',
+          name: 'Igris AI',
           iconURL: message.client.user?.displayAvatarURL()
         })
         .setDescription(response)

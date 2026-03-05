@@ -1,5 +1,5 @@
 /**
- * Config Module: IA (Argos)
+ * Config Module: IA (Igris)
  * Configurações SEGURAS da IA - exclui security, rate_limit, key_management
  */
 
@@ -43,7 +43,7 @@ export async function showAIMenu(
         const config = ConfigService.getConfig<AIConfig>(FILENAME);
 
         const embed = createConfigEmbed(
-            'Configurações da IA (Argos)',
+            'Configurações da IA (Igris)',
             '🤖',
             'Configure o assistente de IA do servidor.\n\n' +
             '⚠️ *Configurações de segurança e rate-limit não são editáveis aqui.*\n\n' +

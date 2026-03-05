@@ -1,8 +1,9 @@
 import {
   Client, EmbedBuilder, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType,
-  MessageFlags
+  MessageFlags, ButtonInteraction
 } from 'discord.js';
 import { prisma } from '@database/client.js';
+import { redis } from '@database/redis.js';
 import { logger } from '@shared/logger.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
 
@@ -82,43 +83,55 @@ export class StarBoardService {
         create: { id: member.id, lastFeaturedAt: new Date() }
       });
 
-      // Coletor para as estrelas
-      const collector = message.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: 3600000 // 1 hora de destaque ativo para votos
-      });
-
-      const voters = new Set<string>();
-
-      collector.on('collect', async (i) => {
-        if (voters.has(i.user.id)) {
-          return await i.reply({ content: 'Você já deu sua estrela para este perfil!', flags: MessageFlags.Ephemeral });
-        }
-        if (i.user.id === member.id) {
-          return await i.reply({ content: 'Você não pode dar uma estrela para si mesmo!', flags: MessageFlags.Ephemeral });
-        }
-
-        voters.add(i.user.id);
-
-        // Incrementar estrelas no banco
-        await prisma.userProfile.update({
-          where: { id: member.id },
-          data: { stars: { increment: 1 } }
-        });
-
-        const newCount = voters.size;
-        const updatedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId(`star_${member.id}`)
-            .setLabel(`⭐ ${newCount}`)
-            .setStyle(ButtonStyle.Success)
-        );
-
-        await i.update({ components: [updatedRow] });
-      });
-
     } catch (error) {
       logger.error('Erro ao destacar perfil no StarBoard:', error);
+    }
+  }
+
+  static async handleStarInteraction(interaction: ButtonInteraction) {
+    try {
+      const targetUserId = interaction.customId.replace('star_', '');
+      const voterId = interaction.user.id;
+
+      if (voterId === targetUserId) {
+        return await interaction.reply({ content: 'Você não pode dar uma estrela para si mesmo!', flags: MessageFlags.Ephemeral });
+      }
+
+      const messageId = interaction.message.id;
+      const redisKey = `star_votes:${messageId}`;
+
+      const alreadyVoted = await redis.sismember(redisKey, voterId);
+      if (alreadyVoted) {
+        return await interaction.reply({ content: 'Você já deu sua estrela para este perfil!', flags: MessageFlags.Ephemeral });
+      }
+
+      await redis.sadd(redisKey, voterId);
+      await redis.expire(redisKey, 86400 * 7); // Guarda o voto por 7 dias na memória do redis
+
+      // Incrementar estrelas no banco
+      await prisma.userProfile.update({
+        where: { id: targetUserId },
+        data: { stars: { increment: 1 } }
+      });
+
+      // Atualizar o botão com o novo count
+      const row = interaction.message.components[0] as any;
+      const currentBtn = row.components[0];
+      const currentCount = parseInt(currentBtn.label?.replace('⭐ ', '') || '0') + 1;
+
+      const updatedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`star_${targetUserId}`)
+          .setLabel(`⭐ ${currentCount}`)
+          .setStyle(ButtonStyle.Success)
+      );
+
+      await interaction.update({ components: [updatedRow] });
+    } catch (error) {
+      logger.error('Erro ao processar estrela:', error);
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: '❌ Ocorreu um erro ao processar sua estrela.', flags: MessageFlags.Ephemeral });
+      }
     }
   }
 }

@@ -10,7 +10,7 @@ Bem-vindo à documentação oficial do **TGR Bot**, o motor de automação, econ
 2. [Stack Tecnológica](#-stack-tecnológica)
 3. [Instalação e Execução](#-instalação-e-execução)
 4. [Arquitetura de Sistemas](#-arquitetura-de-sistemas)
-   - [IA (Argos IA)](#ia-argos-ia)
+   - [IA (Igris IA)](#ia-igris-ia)
    - [Economia](#economia)
    - [Tickets](#tickets)
 5. [Configuração do Ambiente](#-configuração-do-ambiente)
@@ -66,7 +66,7 @@ npm start
 
 ## 🏗️ Arquitetura de Sistemas
 
-### IA (Argos IA)
+### IA (Igris IA)
 *   **Key Rotation**: O `KeyManagerService` evita rate limits rotacionando múltiplas chaves API.
 *   **Memória**: Combina Redis (curto prazo) e PostgreSQL (perfil de usuário) para contexto persistente.
 *   **Functions**: A IA executa comandos como `query_system_knowledge` para responder dúvidas sobre o servidor.

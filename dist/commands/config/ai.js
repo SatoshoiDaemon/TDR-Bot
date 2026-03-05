@@ -1,5 +1,5 @@
 /**
- * Config Module: IA (Argos)
+ * Config Module: IA (Igris)
  * Configurações SEGURAS da IA - exclui security, rate_limit, key_management
  */
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, MessageFlags } from 'discord.js';
@@ -13,7 +13,7 @@ const FILENAME = 'ai.yml';
 export async function showAIMenu(interaction, backHandler) {
     try {
         const config = ConfigService.getConfig(FILENAME);
-        const embed = createConfigEmbed('Configurações da IA (Argos)', '🤖', 'Configure o assistente de IA do servidor.\n\n' +
+        const embed = createConfigEmbed('Configurações da IA (Igris)', '🤖', 'Configure o assistente de IA do servidor.\n\n' +
             '⚠️ *Configurações de segurança e rate-limit não são editáveis aqui.*\n\n' +
             '**📊 Status Atual:**');
         const ai = config.ai || { enabled: true, model: 'gemini-flash-latest', temperature: 0.2 };

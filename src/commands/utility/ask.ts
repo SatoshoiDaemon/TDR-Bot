@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, Message ,
-    MessageFlags
+import {
+  SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, Message,
+  MessageFlags
 } from 'discord.js';
 import { Command } from '../types.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
@@ -25,7 +26,7 @@ async function sendResponse(interactionOrMessage: ChatInputCommandInteraction | 
   if (useEmbed) {
     const embed = new EmbedBuilder()
       .setColor(aiConfig.responses.embed_color as any)
-      .setAuthor({ name: 'Argos AI', iconURL: interactionOrMessage.client.user?.displayAvatarURL() })
+      .setAuthor({ name: 'Igris AI', iconURL: interactionOrMessage.client.user?.displayAvatarURL() })
       .setDescription(response)
       .setTimestamp();
 
@@ -35,17 +36,17 @@ async function sendResponse(interactionOrMessage: ChatInputCommandInteraction | 
 
     if (interactionOrMessage instanceof Message) {
       const sent = await interactionOrMessage.reply({ embeds: [embed] });
-      
+
       if (aiConfig.responses.add_reactions) {
         for (const reaction of aiConfig.responses.reactions) {
-          await sent.react(reaction).catch(() => {});
+          await sent.react(reaction).catch(() => { });
         }
       }
     } else {
       await interactionOrMessage.editReply({ embeds: [embed] });
     }
   } else {
-    const content = aiConfig.responses.mention_user 
+    const content = aiConfig.responses.mention_user
       ? `${interactionOrMessage instanceof Message ? interactionOrMessage.author : interactionOrMessage.user}, ${response}`
       : response;
 
@@ -75,7 +76,7 @@ export const askCommand: Command = {
     // Verificar se o sistema está habilitado
     if (!aiConfig.ai.enabled) {
       const errorMsg = '❌ O sistema de IA está temporariamente desabilitado.';
-      
+
       if (interactionOrMessage instanceof Message) {
         await interactionOrMessage.reply(errorMsg);
       } else {
@@ -86,11 +87,11 @@ export const askCommand: Command = {
 
     // Extrair pergunta
     let question: string;
-    const userId = interactionOrMessage instanceof Message 
-      ? interactionOrMessage.author.id 
+    const userId = interactionOrMessage instanceof Message
+      ? interactionOrMessage.author.id
       : interactionOrMessage.user.id;
-    const username = interactionOrMessage instanceof Message 
-      ? interactionOrMessage.author.username 
+    const username = interactionOrMessage instanceof Message
+      ? interactionOrMessage.author.username
       : interactionOrMessage.user.username;
 
     if (interactionOrMessage instanceof Message) {
@@ -120,9 +121,9 @@ export const askCommand: Command = {
 
     } catch (error) {
       logger.error('Erro no comando ask:', error);
-      
+
       const errorMsg = '❌ Ocorreu um erro ao processar sua pergunta. Tente novamente.';
-      
+
       if (interactionOrMessage instanceof Message) {
         await interactionOrMessage.reply(errorMsg);
       } else {

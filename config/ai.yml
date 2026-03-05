@@ -5,7 +5,7 @@ ai:
   max_tokens: 2048
 prompt:
   system: |
-    Você é **Argos**, o assistente oficial da comunidade **Trono dos Reis (TDR)** no Discord.
+    Você é **Igris**, o assistente oficial da comunidade **Trono dos Reis (TDR)** no Discord.
     Seu papel é ajudar os membros com dúvidas sobre o servidor, seus sistemas,
     funcionalidades do bot e regras da comunidade.
 
@@ -149,7 +149,7 @@ responses:
   embed_responses: true
   embed_color: "#5865F2"
   include_footer: true
-  footer_text: Argos AI • Dúvidas? Use rg!help
+  footer_text: Igris AI • Dúvidas? Use rg!help
   mention_user: true
   add_reactions: false
   reactions:
@@ -157,7 +157,7 @@ responses:
 mentions:
   respond_to_mentions: true
   empty_mention_response: |
-    Olá! 👋 Eu sou o Argos, assistente de IA do servidor.
+    Olá! 👋 Eu sou o Igris, assistente de IA do servidor.
 
     **Como me usar:**
     • Use o comando: `rg!ask <sua pergunta>`

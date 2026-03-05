@@ -18,7 +18,7 @@ async function sendResponse(interactionOrMessage, response, username) {
     if (useEmbed) {
         const embed = new EmbedBuilder()
             .setColor(aiConfig.responses.embed_color)
-            .setAuthor({ name: 'Argos AI', iconURL: interactionOrMessage.client.user?.displayAvatarURL() })
+            .setAuthor({ name: 'Igris AI', iconURL: interactionOrMessage.client.user?.displayAvatarURL() })
             .setDescription(response)
             .setTimestamp();
         if (aiConfig.responses.include_footer) {

@@ -1,4 +1,4 @@
-import { Client, TextChannel, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { Client, TextChannel, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { prisma } from '@database/client.js';
 import { logger } from '@shared/logger.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
@@ -205,20 +205,55 @@ export class EventScheduler {
       .setDescription(config.message)
       .setFooter({ text: 'Seja rápido!' });
 
-    const msg = await channel.send({ embeds: [embed] });
-    await msg.react('💎');
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId('diamond_claim')
+        .setLabel('💎 Coletar Diamante')
+        .setStyle(ButtonStyle.Success)
+    );
 
-    const filter = (reaction: any, user: any) => reaction.emoji.name === '💎' && !user.bot;
-    const collector = msg.createReactionCollector({ filter, max: 1, time: 30000 });
+    const msg = await channel.send({ embeds: [embed], components: [row] });
 
-    collector.on('collect', async (reaction: any, user: any) => {
+    const collector = msg.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      max: 1,
+      time: 30000
+    });
+
+    collector.on('collect', async (i: any) => {
+      if (i.customId !== 'diamond_claim') return;
+
+      const user = i.user;
+
       await prisma.economy.upsert({
         where: { userId: user.id },
         update: { wallet: { increment: BigInt(config.reward) } },
         create: { userId: user.id, wallet: BigInt(config.reward) }
       });
 
+      const updatedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId('diamond_claim')
+          .setLabel(`💎 Coletado por ${user.username}`)
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true)
+      );
+
+      await i.update({ components: [updatedRow] }).catch(() => { });
       await channel.send(`💎 **${user.username}** foi o mais rápido e coletou o diamante de **${config.reward}** dracmas!`);
+    });
+
+    collector.on('end', async (collected) => {
+      if (collected.size === 0) {
+        const updatedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId('diamond_claim_expired')
+            .setLabel('💎 Diamante Perdido')
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true)
+        );
+        await msg.edit({ components: [updatedRow] }).catch(() => { });
+      }
     });
   }
 

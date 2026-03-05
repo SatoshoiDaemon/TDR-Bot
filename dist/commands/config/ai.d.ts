@@ -1,5 +1,5 @@
 /**
- * Config Module: IA (Argos)
+ * Config Module: IA (Igris)
  * Configurações SEGURAS da IA - exclui security, rate_limit, key_management
  */
 import { type MessageComponentInteraction, type ModalSubmitInteraction } from 'discord.js';
