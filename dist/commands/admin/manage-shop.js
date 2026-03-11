@@ -112,6 +112,9 @@ export const manageShopCommand = {
                 logger.error('Erro no dashboard da loja:', err);
             }
         });
+        collector.on('end', () => {
+            collector.removeAllListeners();
+        });
     },
     async handleCreateModal(interaction) {
         const modal = new ModalBuilder()

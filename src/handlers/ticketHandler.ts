@@ -125,6 +125,17 @@ export class TicketInteractionHandler {
             return false;
         } catch (error) {
             logger.error('[TicketHandler] Erro ao processar interação:', error);
+            try {
+                if (interaction.isRepliable()) {
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.editReply({ content: '❌ Erro ao processar interação de ticket.' });
+                    } else {
+                        await interaction.reply({ content: '❌ Erro ao processar interação de ticket.', flags: MessageFlags.Ephemeral });
+                    }
+                }
+            } catch (err) {
+                logger.error('[TicketHandler] Falha ao enviar mensagem de erro:', err);
+            }
             return false;
         }
     }

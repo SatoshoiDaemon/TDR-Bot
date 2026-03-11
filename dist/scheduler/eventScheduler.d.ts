@@ -3,10 +3,7 @@ export declare class EventScheduler {
     private client;
     private lastEventType;
     private lastEnigmaIndex;
-    private recentEnigmaIndices;
     constructor(client: Client);
-    private loadEnigmaHistory;
-    private saveEnigmaHistory;
     start(): void;
     private tryStartRandomEvent;
     private static readonly ENIGMAS;

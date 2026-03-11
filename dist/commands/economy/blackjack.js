@@ -181,6 +181,7 @@ export const blackjackCommand = {
             }
         });
         collector.on('end', async (_collected, reason) => {
+            collector.removeAllListeners();
             // Timeout - perder aposta (Corrige exploit onde o player deixa o tempo acabar se a mão for ruim para não perder saldo)
             if (reason === 'time' && !gameOver) {
                 logger.info(`[Blackjack] ${userId} timeout, aposta perdida`);

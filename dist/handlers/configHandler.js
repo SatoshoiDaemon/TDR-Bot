@@ -104,8 +104,18 @@ export class ConfigInteractionHandler {
         }
         catch (error) {
             logger.error('[ConfigHandler] Erro ao processar interação:', error);
-            if (interaction.isRepliable() && !interaction.replied) {
-                await interaction.reply({ content: '❌ Erro ao processar configuração.', flags: MessageFlags.Ephemeral });
+            try {
+                if (interaction.isRepliable()) {
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.editReply({ content: '❌ Erro ao processar configuração.' });
+                    }
+                    else {
+                        await interaction.reply({ content: '❌ Erro ao processar configuração.', flags: MessageFlags.Ephemeral });
+                    }
+                }
+            }
+            catch (err) {
+                logger.error('[ConfigHandler] Falha ao enviar mensagem de erro:', err);
             }
             return true;
         }

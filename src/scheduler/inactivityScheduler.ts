@@ -4,6 +4,7 @@ import { logger } from '@shared/logger.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
 import { appConfig } from '@shared/config.js';
 import { ConfigService } from '@services/configService.js';
+import { TimerManager } from '@shared/timerManager.js';
 
 interface InactivityConfig {
   enabled: boolean;
@@ -40,10 +41,10 @@ export class InactivityScheduler {
     if (!config?.enabled) return;
 
     // Verificar inatividade a cada 6 horas
-    setInterval(() => this.checkInactivity(), 6 * 60 * 60 * 1000);
+    TimerManager.setInterval(() => this.checkInactivity(), 6 * 60 * 60 * 1000);
 
     // Primeira verificação 2 minutos após o boot
-    setTimeout(() => this.checkInactivity(), 2 * 60 * 1000);
+    TimerManager.setTimeout(() => this.checkInactivity(), 2 * 60 * 1000);
 
     logger.info('Serviço de Inatividade iniciado.');
   }
@@ -94,7 +95,7 @@ export class InactivityScheduler {
         if (wasNotified) notifiedCount++;
 
         // Delay anti rate limit
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => TimerManager.setTimeout(r, 500));
       }
 
       logger.info(`[Inatividade] Verificação concluída: ${inactiveLevels.length} inativos encontrados, ${notifiedCount} notificados.`);

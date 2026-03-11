@@ -2,6 +2,7 @@ import { Client, EmbedBuilder, TextChannel } from 'discord.js';
 import { prisma } from '@database/client.js';
 import { logger } from '@shared/logger.js';
 import { EMBED_COLORS, EMBED_CREDIT } from '@shared/embedTheme.js';
+import { TimerManager } from '@shared/timerManager.js';
 
 export class ReminderScheduler {
   private client: Client;
@@ -13,7 +14,7 @@ export class ReminderScheduler {
 
   start() {
     // Verificar lembretes a cada 30 segundos
-    this.interval = setInterval(() => this.checkReminders(), 30000);
+    this.interval = TimerManager.setInterval(() => this.checkReminders(), 30000);
     logger.info('Serviço de Lembretes iniciado.');
   }
 

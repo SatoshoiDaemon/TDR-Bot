@@ -222,6 +222,7 @@ export const minesCommand = {
             }
         });
         collector.on('end', async (collected, reason) => {
+            collector.removeAllListeners();
             // Timeout - perder aposta
             if (reason === 'time' && !gameOver && !cashedOut) {
                 embed.setColor(EMBED_COLORS.WARNING)

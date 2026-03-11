@@ -93,6 +93,9 @@ export const inventoryCommand = {
                 logger.error('Erro no collector do Inventory:', err);
             }
         });
+        collector.on('end', () => {
+            collector.removeAllListeners();
+        });
     }
 };
 //# sourceMappingURL=inventory.js.map

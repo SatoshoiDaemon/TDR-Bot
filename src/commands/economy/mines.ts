@@ -254,6 +254,7 @@ export const minesCommand = {
     });
 
     collector.on('end', async (collected: any, reason: string) => {
+      collector.removeAllListeners();
       // Timeout - perder aposta
       if (reason === 'time' && !gameOver && !cashedOut) {
         embed.setColor(EMBED_COLORS.WARNING)

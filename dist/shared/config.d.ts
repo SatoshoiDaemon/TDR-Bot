@@ -23,4 +23,7 @@ export declare const appConfig: {
     readonly commands: {
         readonly prefix: string;
     };
+    readonly loritta: {
+        readonly token: string;
+    };
 };

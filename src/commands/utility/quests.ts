@@ -110,6 +110,10 @@ export const questsCommand: Command = {
           }
         }
       });
+
+      collector.on('end', () => {
+        collector.removeAllListeners();
+      });
     }
   },
 

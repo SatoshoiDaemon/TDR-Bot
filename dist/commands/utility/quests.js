@@ -93,6 +93,9 @@ export const questsCommand = {
                     }
                 }
             });
+            collector.on('end', () => {
+                collector.removeAllListeners();
+            });
         }
     },
     getProgressBar(percent) {

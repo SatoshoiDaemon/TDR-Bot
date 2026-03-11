@@ -1,4 +1,4 @@
-import { Client, Events, Collection, REST, Routes, EmbedBuilder, MessageFlags } from 'discord.js';
+import { Client, Events, Collection, REST, Routes, EmbedBuilder, MessageFlags, Options } from 'discord.js';
 import { appConfig } from '../shared/config.js';
 import { connectDB, prisma } from '../database/client.js';
 import { redis } from '../database/redis.js';
@@ -27,8 +27,9 @@ import { DiceRoller } from '../utils/diceRoller.js';
 import { RollService } from '../services/rollService.js';
 import { EventService, EventType } from '../services/eventService.js';
 import { QuestService, QuestType } from '../services/questService.js';
+import { TimerManager } from '../shared/timerManager.js';
 /**
- * Cliente Discord com intents necessários
+ * Cliente Discord com intents necessários e configurações de cache (OOM Mitigation)
  */
 const client = new Client({
     intents: [
@@ -38,7 +39,24 @@ const client = new Client({
         'GuildMembers',
         'GuildVoiceStates',
         'GuildMessageReactions'
-    ]
+    ],
+    makeCache: Options.cacheWithLimits({
+        MessageManager: 100, // Limite de 100 mensagens por canal no máximo
+        ReactionManager: 0,
+        ThreadManager: 20,
+        GuildMemberManager: {
+            maxSize: 1000,
+            keepOverLimit: () => false,
+        },
+        UserManager: 1000,
+    }),
+    sweepers: {
+        ...Options.DefaultMakeCacheSettings,
+        messages: {
+            interval: 3600, // Cada 1 hora (em segundos)
+            lifetime: 14400, // Remove mensagens com mais de 4 horas
+        },
+    },
 });
 import path from 'path';
 const databasePath = path.join(process.cwd(), 'prisma', 'dev.db');
@@ -190,7 +208,7 @@ async function bootstrap() {
         try {
             const snapshotDbPath = path.join(process.cwd(), 'snapshots.db');
             const backupService = new BackupService(snapshotDbPath, appConfig.backup.retentionDays);
-            setInterval(() => {
+            TimerManager.setInterval(() => {
                 try {
                     // Faz o backup automático e periódico de snapshots.db que guarda a arquitetura, chats e categorias do servidor (Backup de Server):
                     backupService.createBackup(snapshotDbPath);
@@ -342,7 +360,7 @@ async function bootstrap() {
                     data: { afkReason: null, afkSince: null }
                 });
                 const welcomeBack = await message.reply(`👋 Bem-vindo de volta, **${message.author.username}**! Removi seu status de AFK.`);
-                setTimeout(async () => {
+                TimerManager.setTimeout(async () => {
                     try {
                         await welcomeBack.delete();
                     }
@@ -435,10 +453,20 @@ async function bootstrap() {
                         .replace(/{username}/g, message.author.username)
                         .replace(/{level}/g, (xpResult?.newLevel ?? 0).toString())
                         .replace(/{rewards}/g, xpResult?.rewards?.length ? `Você ganhou os cargos: ${xpResult.rewards.map(r => `<@&${r}>`).join(', ')}` : '');
+                    let extraTip = '';
+                    if (xpResult.newLevel === 5) {
+                        extraTip = '\n\n💡 **Dica:** Você liberou o uso de emojis! Lembre-se de usar `/quests` para ganhar recompensas diárias.';
+                    }
+                    else if (xpResult.newLevel === 10) {
+                        extraTip = '\n\n💡 **Dica:** Mídia liberada! Agora você pode enviar imagens. Fique de olho nos eventos de XP Duplo no chat!';
+                    }
+                    else if (xpResult.newLevel === 20) {
+                        extraTip = '\n\n💡 **Dica:** O verdadeiro jogo começa agora! Use `/shop` para comprar itens exclusivos com seus dracmas.';
+                    }
                     if (config.use_embed) {
                         const embed = new EmbedBuilder()
                             .setTitle(replacePlaceholders(config.embed.title))
-                            .setDescription(replacePlaceholders(config.embed.description))
+                            .setDescription(replacePlaceholders(config.embed.description) + extraTip)
                             .setColor(config.embed.color)
                             .setFooter({ text: replacePlaceholders(config.embed.footer) })
                             .setTimestamp();
@@ -543,6 +571,28 @@ async function bootstrap() {
                         await member.send(replacePlaceholders(welcomeConfig.dm_message.content));
                     }
                     logger.info(`✅ Mensagem de boas-vindas enviada para ${member.id}`);
+                    // Agendar a mensagem 2 (Mecânicas de bot e retenção) após 60 minutos (3600000 ms)
+                    TimerManager.setTimeout(async () => {
+                        try {
+                            // Verifica se o usuário ainda está no servidor antes de mandar DM
+                            const stillInGuild = await member.guild.members.fetch(member.id).catch(() => null);
+                            if (!stillInGuild)
+                                return;
+                            const mechanicsEmbed = new EmbedBuilder()
+                                .setTitle('⚔️ Preparado para a Aventura?')
+                                .setColor('#FFD700')
+                                .setDescription(`Olá novamente, ${member.user.username}! Já se acomodou em TDR?\n\n` +
+                                `O servidor possui um sistema de economia e RPG próprio. ` +
+                                `Para começar sua progressão, digite **\`/quests\`** no canal de comandos para ver suas missões diárias.\n\n` +
+                                `Participe do chat para subir de nível e liberar permissões de imagem, sons e ganhar dracmas (nossa moeda local)!`)
+                                .setFooter({ text: 'Trono dos Reis · Guia do Iniciante' });
+                            await member.send({ embeds: [mechanicsEmbed] });
+                            logger.info(`✅ Mensagem de retenção (Mensagem 2) enviada para ${member.id}`);
+                        }
+                        catch (err) {
+                            logger.error(`❌ Erro ao enviar Mensagem 2 para ${member.id}:`, err);
+                        }
+                    }, 60 * 60 * 1000); // 60 minutos
                 }
                 catch (e) {
                     logger.error(`❌ Erro ao enviar mensagem de boas-vindas na DM para ${member.id}:`, e);
@@ -561,6 +611,24 @@ async function bootstrap() {
         logger.error('❌ Erro ao fazer login no Discord:', err);
         process.exit(1);
     }
+    // Tratadores de Terminação Limpa (SIGTERM, SIGINT) para OOM mitigations
+    const shutdown = async (signal) => {
+        logger.info(`Recebido ${signal}. Iniciando shutdown limpo...`);
+        TimerManager.cleanup();
+        try {
+            if (client.isReady()) {
+                client.destroy();
+            }
+            logger.info('✅ Shutdown finalizado.');
+            process.exit(0);
+        }
+        catch (e) {
+            logger.error('❌ Erro no shutdown:', e);
+            process.exit(1);
+        }
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
 }
 // Iniciar bot
 bootstrap().catch(err => {

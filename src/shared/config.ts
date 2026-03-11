@@ -92,5 +92,8 @@ export const appConfig = {
   },
   commands: {
     prefix: getOptionalEnv('COMMAND_PREFIX', 'rg!')
+  },
+  loritta: {
+    token: getRequiredEnv('LORITTA_API_TOKEN')
   }
 } as const;

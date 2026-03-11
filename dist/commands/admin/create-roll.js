@@ -153,6 +153,7 @@ export const createRollCommand = {
             }
         });
         collector.on('end', (collected, reason) => {
+            collector.removeAllListeners();
             if (reason === 'time') {
                 logger.info('[CreateRoll] Collector expirou por timeout');
             }
@@ -256,6 +257,9 @@ export const createRollCommand = {
             catch (err) {
                 logger.error('[CreateRoll] Erro no menu de edição:', err);
             }
+        });
+        collector.on('end', () => {
+            collector.removeAllListeners();
         });
     },
     /**

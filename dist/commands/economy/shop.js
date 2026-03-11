@@ -200,6 +200,7 @@ export const shopCommand = {
             }
         });
         collector.on('end', (_collected, reason) => {
+            collector.removeAllListeners();
             if (reason === 'time') {
                 logger.info(`[Shop] Collector de ${userId} expirou por timeout`);
             }

@@ -131,6 +131,7 @@ export const highLowCommand = {
         });
 
         collector.on('end', async (_collected: any, reason: string) => {
+            collector.removeAllListeners();
             if (reason === 'time') {
                 const timeoutEmbed = new EmbedBuilder().setColor(EMBED_COLORS.ERROR).setDescription('⏱️ **Tempo esgotado!** Você demorou muito e perdeu sua aposta por W.O.');
                 try {

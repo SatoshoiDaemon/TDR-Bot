@@ -498,3 +498,16 @@ model TicketRating {
   @@index([guildId])
   @@index([staffId])
 }
+
+// --- Módulo da Loritta ---
+
+model LorittaTransaction {
+  id              String   @id @default(uuid())
+  userId          String
+  amount          Int
+  status          String   @default("REQUESTED") // 'REQUESTED', 'PAID', 'FAILED'
+  timestamp       DateTime @default(now())
+  idempotencyKey  String   @unique
+
+  @@index([userId])
+}

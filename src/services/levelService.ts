@@ -157,7 +157,11 @@ export class LevelService {
   }
 
   static calculateXpForLevel(level: number): number {
-    // Formula: 100 + (level^2.2 × 15) + (level × 100)
+    // Para níveis baixos, suaviza a curva inicial para recompensar rápido
+    if (level <= 5) {
+      return Math.floor(100 + (Math.pow(level, 1.5) * 20) + (level * 50));
+    }
+    // Formula padrão: 100 + (level^2.2 × 15) + (level × 100)
     return Math.floor(100 + (Math.pow(level, 2.2) * 15) + (level * 100));
   }
 

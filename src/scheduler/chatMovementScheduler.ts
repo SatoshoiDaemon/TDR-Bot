@@ -1,6 +1,7 @@
 import { Client, TextChannel } from 'discord.js';
 import { logger } from '@shared/logger.js';
 import { chatMovementConfig } from '@shared/config/yamlLoader.js';
+import { TimerManager } from '@shared/timerManager.js';
 
 export class ChatMovementScheduler {
     private client: Client;
@@ -17,12 +18,12 @@ export class ChatMovementScheduler {
         logger.info('Agendador de Movimentação de Chat (Auto Chat) iniciado.');
 
         const hours = chatMovementConfig.interval_hours || 4;
-        this.interval = setInterval(() => {
+        this.interval = TimerManager.setInterval(() => {
             this.run();
         }, hours * 60 * 60 * 1000);
 
         // Initial check delayed slightly to not clog boot
-        setTimeout(() => this.run(), 5 * 60 * 1000); // 5 minutes after start
+        TimerManager.setTimeout(() => this.run(), 5 * 60 * 1000); // 5 minutes after start
     }
 
     async run() {
@@ -81,6 +82,6 @@ export class ChatMovementScheduler {
     }
 
     stop() {
-        if (this.interval) clearInterval(this.interval);
+        if (this.interval) TimerManager.clearInterval(this.interval);
     }
 }

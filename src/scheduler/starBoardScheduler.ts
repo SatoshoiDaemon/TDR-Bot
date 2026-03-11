@@ -4,6 +4,7 @@ import { appConfig } from '@shared/config.js';
 import { logger } from '@shared/logger.js';
 import { ConfigService } from '@services/configService.js';
 import type { ProfileConfig } from '../types/configs/profile.js';
+import { TimerManager } from '@shared/timerManager.js';
 
 export class StarBoardScheduler {
   private client: Client;
@@ -17,12 +18,12 @@ export class StarBoardScheduler {
     logger.info('Agendador do StarBoard iniciado.');
 
     // Executar a cada 1.5 horas
-    this.interval = setInterval(() => {
+    this.interval = TimerManager.setInterval(() => {
       this.run();
     }, 1.5 * 60 * 60 * 1000);
 
     // Execução inicial após 1 minuto para não sobrecarregar o boot
-    setTimeout(() => this.run(), 60000);
+    TimerManager.setTimeout(() => this.run(), 60000);
   }
 
   async run() {
@@ -39,6 +40,6 @@ export class StarBoardScheduler {
   }
 
   stop() {
-    if (this.interval) clearInterval(this.interval);
+    if (this.interval) TimerManager.clearInterval(this.interval);
   }
 }
