@@ -35,4 +35,5 @@ Thumbs.db
 *.swo
 
 # TypeScript
+dist/
 tsconfig.tsbuildinfo
