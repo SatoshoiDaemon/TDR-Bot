@@ -1,37 +1,7 @@
 import { Redis } from 'ioredis';
 import { logger } from '@shared/logger.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-
-// Configuração TLS para SquareCloud ou customizado
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const certsDir = path.resolve(__dirname, '../../certs/redis');
-
-// Verificar se os certificados existem localmente
-const hasCerts = fs.existsSync(path.join(certsDir, 'ca-certificate.crt'));
-const isUpstash = redisUrl.includes('upstash.io') || redisUrl.startsWith('rediss://');
-
-let tlsOptions = {};
-
-if (isUpstash) {
-  // Para Upstash/rediss, usamos TLS padrão sem rejectUnauthorized para resolver issuer local
-  tlsOptions = {
-    tls: { rejectUnauthorized: false }
-  };
-} else if (hasCerts) {
-  // Somente usa certificados manuais se não for Upstash e eles existirem
-  tlsOptions = {
-    tls: {
-      ca: fs.readFileSync(path.join(certsDir, 'ca-certificate.crt')),
-      cert: fs.readFileSync(path.join(certsDir, 'certificate.pem')),
-      key: fs.readFileSync(path.join(certsDir, 'private-key.key')),
-      rejectUnauthorized: true,
-    },
-  };
-}
 
 export const redis = new Redis(redisUrl, {
   maxRetriesPerRequest: 3,
@@ -39,7 +9,7 @@ export const redis = new Redis(redisUrl, {
     const delay = Math.min(times * 50, 2000);
     return delay;
   },
-  ...tlsOptions,
+  tls: { rejectUnauthorized: false },
 });
 
 redis.on('connect', () => {
