@@ -16,7 +16,13 @@ const isUpstash = redisUrl.includes('upstash.io') || redisUrl.startsWith('rediss
 
 let tlsOptions = {};
 
-if (hasCerts) {
+if (isUpstash) {
+  // Para Upstash/rediss, usamos TLS padrão sem rejectUnauthorized para resolver issuer local
+  tlsOptions = {
+    tls: { rejectUnauthorized: false }
+  };
+} else if (hasCerts) {
+  // Somente usa certificados manuais se não for Upstash e eles existirem
   tlsOptions = {
     tls: {
       ca: fs.readFileSync(path.join(certsDir, 'ca-certificate.crt')),
@@ -24,10 +30,6 @@ if (hasCerts) {
       key: fs.readFileSync(path.join(certsDir, 'private-key.key')),
       rejectUnauthorized: true,
     },
-  };
-} else if (isUpstash) {
-  tlsOptions = {
-    tls: { rejectUnauthorized: false }
   };
 }
 
