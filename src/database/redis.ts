@@ -6,21 +6,30 @@ import { fileURLToPath } from 'url';
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
-// Configuração TLS para SquareCloud
+// Configuração TLS para SquareCloud ou customizado
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const certsDir = path.resolve(__dirname, '../../certs/redis');
 
-// Verificar se os certificados existem
+// Verificar se os certificados existem localmente
 const hasCerts = fs.existsSync(path.join(certsDir, 'ca-certificate.crt'));
+const isUpstash = redisUrl.includes('upstash.io') || redisUrl.startsWith('rediss://');
 
-const tlsOptions = hasCerts ? {
-  tls: {
-    ca: fs.readFileSync(path.join(certsDir, 'ca-certificate.crt')),
-    cert: fs.readFileSync(path.join(certsDir, 'certificate.pem')),
-    key: fs.readFileSync(path.join(certsDir, 'private-key.key')),
-    rejectUnauthorized: true,
-  },
-} : {};
+let tlsOptions = {};
+
+if (hasCerts) {
+  tlsOptions = {
+    tls: {
+      ca: fs.readFileSync(path.join(certsDir, 'ca-certificate.crt')),
+      cert: fs.readFileSync(path.join(certsDir, 'certificate.pem')),
+      key: fs.readFileSync(path.join(certsDir, 'private-key.key')),
+      rejectUnauthorized: true,
+    },
+  };
+} else if (isUpstash) {
+  tlsOptions = {
+    tls: { rejectUnauthorized: false }
+  };
+}
 
 export const redis = new Redis(redisUrl, {
   maxRetriesPerRequest: 3,
